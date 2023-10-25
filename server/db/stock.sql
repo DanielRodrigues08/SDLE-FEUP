@@ -1,7 +1,0 @@
-DROP TABLE IF EXISTS stock;
-
-CREATE TABLE stock (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    quantity INTEGER NOT NULL
-);
