@@ -179,3 +179,19 @@ Suppose we have a Dynamo cluster with 10 nodes and a preference list of 5 nodes 
 - DynamoDB uses a gossip protocol to propagate information about new nodes to all nodes in the system.
 - When a new node receives information about a new node, it contacts the new node to coordinate the transfer of keys.
 - The transfer of keys is done in a way that minimizes disruption to the system.
+
+## Chapter 5: Implementation
+
+- DynamoDB has three main software components: request coordination, membership and failure detection, and a local persistence engine.
+- The local persistence engine can be plugged in, and the default engine is Berkeley Database Transactional Data Store.
+- The request coordination component is built on an event-driven messaging substrate and uses Java NIO channels.
+- For each client request, a state machine is created to identify the nodes responsible for the key, send the requests, wait for responses, and process the replies.
+- After the read response has been returned to the caller, the state machine waits for a small period of time to receive any outstanding responses and updates any nodes that returned stale versions.
+- Write requests are coordinated by one of the top N nodes in the preference list.
+- To improve load distribution and performance, the coordinator for a write is chosen to be the node that replied fastest to the previous read operation.
+
+**Additional notes:**
+
+- The SEDA architecture (Staged Event-Driven Architecture) is a design pattern for distributed systems that uses a series of stages to process events. This approach helps to improve performance and scalability.
+- The read repair mechanism helps to ensure that replicas are consistent by repairing replicas that have missed a recent update.
+- The "read-your-writes" consistency model guarantees that a client will always see the latest value that it wrote, even if the write has not yet been replicated to all nodes.
