@@ -48,3 +48,5 @@ class BAWSet {
         this.removed.merge(other.removed);
     }
 }
+
+export { BAWSet };
