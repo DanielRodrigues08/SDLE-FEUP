@@ -34,4 +34,4 @@ class PCounter {
 
 }
 
-//export { PCounter };
+export { PCounter };
