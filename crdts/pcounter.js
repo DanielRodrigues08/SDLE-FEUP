@@ -1,3 +1,4 @@
+// Positive Counter
 class PCounter {
     constructor(tag) {
         this.tag = tag;

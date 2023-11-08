@@ -1,3 +1,4 @@
+// Grow Only Set
 class GSet {
     constructor() {
         this.set = new Set();
