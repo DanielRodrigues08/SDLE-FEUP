@@ -9,7 +9,7 @@ class GSet {
         return this.set.has(element);
     }
     elements() {
-        return Array.of(this.set.entries());
+        return this.set.entries();
     }
     merge(other) {
         for (const element of other.elements()) {
@@ -17,3 +17,4 @@ class GSet {
         }
     }
 }
+export { GSet };
