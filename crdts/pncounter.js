@@ -28,4 +28,4 @@ class PNCounter {
 
     }
 }
-export {PNCounter};
+export { PNCounter };

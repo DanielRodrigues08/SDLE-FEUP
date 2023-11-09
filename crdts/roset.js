@@ -12,7 +12,13 @@ class ROSet {
         this.toombstone.add(element);
     }
     elements() {
-        return this.set.elements().filter(x => !this.toombstone.contains(x));
+        const res = [];
+        for (const [key, _] of this.set.elements()) {
+            if (!this.toombstone.contains(key)) {
+                res.push(key);
+            }
+        }
+        return res;
     }
     contains(element) {
         return this.set.contains(element) && !this.toombstone.contains(element);
@@ -22,3 +28,4 @@ class ROSet {
         this.toombstone.merge(other.toombstone);
     }
 }
+export { ROSet };

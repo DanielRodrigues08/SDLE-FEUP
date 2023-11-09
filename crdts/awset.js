@@ -1,26 +1,29 @@
-import { CausalContext } from "./causalcontext";
+import { CausalContext } from "./causalcontext.js";
 
 class AWSet {
     constructor(tag) {
         this.tag = tag;
-        this.set = new Map();
+        // A map From Element to a set of tag-context
+        this.items = new Map();
         this.seen = new CausalContext();
+        // Uma ideia que tive é tentar verificar se no context em vez de conter a tag ter uma tag
+        // maior ou igual ou seja será eliminado ???
     }
     add(element) {
         const contextItem = this.seen.next(this.tag);
-        if (!this.set.has(element)) {
-            this.set.set(element, new Set());
+        if (!this.items.has(element)) {
+            this.items.set(element, new Set());
         }
-        this.set.get(element).add(contextItem);
+        this.items.get(element).add(contextItem);
     }
     remove(element) {
-        if (!this.set.has(element)) {
+        if (!this.items.has(element)) {
             return;
         }
-        this.set.delete(element);
+        this.items.delete(element);
     }
     elements() {
-        return this.set.keys();
+        return this.items.keys();
     }
     merge(other) {
         function setIntesection(a, b) {
@@ -49,13 +52,13 @@ class AWSet {
 
         }
         const allKeys = new Set();
-        for (const key of this.set.keys()) { allKeys.add(key) };
+        for (const key of this.items.keys()) { allKeys.add(key) };
         for (const key of other.set.keys()) { allKeys.add(key) };
 
         for (const key of allKeys) {
 
-            const thisItems = safeGet(this.set, key, new Set());
-            const otherItems = safeGet(this.set, key, new Set());
+            const thisItems = safeGet(this.items, key, new Set());
+            const otherItems = safeGet(this.items, key, new Set());
 
             const inCommon = setIntesection(thisItems, otherItems);
             const inThis = setDifference(thisItems, otherItems);
@@ -67,17 +70,19 @@ class AWSet {
             }
             // f filtering function
             for (const item of inThis) {
+                // usar o seen.max(tag) ???
                 if (!other.seen.has(item)) {
                     result.add(item);
                 }
             }
             // f filtering function
             for (const item of inOther) {
+                // usar o seen.max(tag)??
                 if (!this.seen.has(item)) {
                     result.add(item);
                 }
             }
-            this.set.set(key, result);
+            this.items.set(key, result);
         }
     }
 

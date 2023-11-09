@@ -2,14 +2,17 @@ class CausalContext {
     constructor() {
         this.items = new Map();
     }
-    next(tag) {
-        let current = 0;
+    max(tag) {
+        let max = 0;
         if (this.items.has(tag)) {
-            current = this.items.get(tag);
+            max = this.items.get(tag);
         }
-        let next = current + 1;
+        return max;
+    }
+    next(tag) {
+        let next = this.max(tag) + 1;
         this.items.set(tag, next);
-        return current;
+        return next;
     }
 }
 

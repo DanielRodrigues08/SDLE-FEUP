@@ -2,7 +2,7 @@
 import { GSet } from "./gset.js";
 
 function randomUUID() {
-    if (window && window.crypto && window.crypto) {
+    if (window && window.crypto && window.crypto.randomUUID) {
         return window.crypto.randomUUID();
     }
     const range = 1e10;

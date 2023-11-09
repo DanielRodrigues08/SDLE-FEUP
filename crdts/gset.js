@@ -13,8 +13,8 @@ class GSet {
         return this.set.entries();
     }
     merge(other) {
-        for (const element of other.elements()) {
-            this.set.add(element);
+        for (const [key, _] of other.elements()) {
+            this.set.add(key);
         }
     }
 }
