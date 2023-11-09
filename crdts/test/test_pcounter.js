@@ -1,15 +1,15 @@
-import { PCounter } from "../pcounter";
-import { assertEquals } from "./testing";
+import { PCounter } from "../pcounter.js";
+import { assertEquals } from "./testing.js";
 
 
-function test_count() {
+export function test_count() {
     const c = new PCounter("c");
     c.increment();
     c.increment(2);
     assertEquals(c.value(), 3);
 }
 
-function test_bottom() {
+export function test_bottom() {
     const c = new PCounter("c");
     const bottom = new PCounter("d");
 
@@ -24,7 +24,7 @@ function test_bottom() {
     assertEquals(bottom.value(), 2);
 }
 
-function test_merge() {
+export function test_merge() {
     const c = new PCounter("c");
     c.increment(3);
 
@@ -35,7 +35,7 @@ function test_merge() {
     assertEquals(d.value(), 4);
 }
 
-function test_concurrent() {
+export function test_concurrent() {
     const c = new PCounter("c");
     c.increment(3);
 
@@ -56,7 +56,7 @@ function test_concurrent() {
     assertEquals(c.value(), 6);
 }
 
-function test_retransmissions() {
+export function test_retransmissions() {
     const c = new PCounter("c");
     const d = new PCounter("d");
 
