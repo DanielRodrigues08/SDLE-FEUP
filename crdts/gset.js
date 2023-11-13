@@ -10,10 +10,10 @@ class GSet {
         return this.set.has(element);
     }
     elements() {
-        return this.set.entries();
+        return this.set.keys();
     }
     merge(other) {
-        for (const [key, _] of other.elements()) {
+        for (const key of other.elements()) {
             this.set.add(key);
         }
     }

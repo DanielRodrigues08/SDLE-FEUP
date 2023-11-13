@@ -6,7 +6,7 @@ function randomUUID() {
         return window.crypto.randomUUID();
     }
     const range = 1e10;
-    return Date.now().toString() + toString(Math.random() * range);
+    return Date.now().toString() + Math.random() * range;
 }
 // Understand why the removed elements must be kept in the set
 class BAWSet {
@@ -27,7 +27,7 @@ class BAWSet {
     }
     contains(element) {
         for (const [el, tag] of this.set.elements()) {
-            if (el == element && !this.removed.has(tag)) {
+            if (el == element && !this.removed.contains(tag)) {
                 return true;
             }
         }
@@ -36,7 +36,7 @@ class BAWSet {
     elements() {
         const result = [];
         for (const [element, tag] of this.set.elements()) {
-            if (!this.removed.has(tag)) {
+            if (!this.removed.contains(tag)) {
                 result.push(element);
             }
         }

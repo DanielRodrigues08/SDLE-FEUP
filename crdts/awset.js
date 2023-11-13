@@ -28,7 +28,7 @@ class AWSet {
     merge(other) {
         function setIntesection(a, b) {
             let res = new Set();
-            for (const el of a.elements()) {
+            for (const el of a.keys()) {
                 if (b.has(el)) {
                     res.add(el);
                 }
@@ -38,11 +38,12 @@ class AWSet {
         function setDifference(a, b) {
             let intersection = setIntesection(a, b);
             let res = new Set();
-            for (const el of a.element()) {
+            for (const el of a.keys()) {
                 if (!intersection.has(el)) {
-                    res.push(el);
+                    res.add(el);
                 }
             }
+            return res;
         }
         function safeGet(set, key, val) {
             if (!set.has(key)) {
@@ -53,12 +54,12 @@ class AWSet {
         }
         const allKeys = new Set();
         for (const key of this.items.keys()) { allKeys.add(key) };
-        for (const key of other.set.keys()) { allKeys.add(key) };
+        for (const key of other.items.keys()) { allKeys.add(key) };
 
         for (const key of allKeys) {
 
             const thisItems = safeGet(this.items, key, new Set());
-            const otherItems = safeGet(this.items, key, new Set());
+            const otherItems = safeGet(other.items, key, new Set());
 
             const inCommon = setIntesection(thisItems, otherItems);
             const inThis = setDifference(thisItems, otherItems);
@@ -69,6 +70,7 @@ class AWSet {
                 result.add(item);
             }
             // f filtering function
+            debugger;
             for (const item of inThis) {
                 // usar o seen.max(tag) ???
                 if (!other.seen.has(item)) {

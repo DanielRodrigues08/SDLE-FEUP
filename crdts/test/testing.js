@@ -1,6 +1,7 @@
 
 export function assertEquals(a, b) {
-    if (a != b) {
+
+    if (a != b && JSON.stringify(a) != JSON.stringify(b)) {
         throw new Error(`${a} does not equal ${b}`);
     }
 }
@@ -19,6 +20,7 @@ async function runTest(testFunc, file, funcName) {
         testFunc();
     } catch (e) {
         console.error(`Exception While testing ${file}::${funcName} -> ${e}`)
+        console.error(e.stack);
         passed = false;
     }
     return passed;
@@ -37,9 +39,9 @@ export async function testFile(filePath) {
     Promise.allSettled(results);
     for (let i = 0; i < names.length; i++) {
         // As it was settled above it will imediatly return
+        const testName = `${filePath}::${names[i]}`;
         results[i].then(result => {
             if (result) {
-                const testName = `${filePath}::${names[i]}`;
                 console.log(testName + " passed!");
             }
             else {
@@ -50,3 +52,5 @@ export async function testFile(filePath) {
     }
 
 }
+
+// TODO: discover test files inside a test folder

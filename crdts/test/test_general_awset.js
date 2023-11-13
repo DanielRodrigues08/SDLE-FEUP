@@ -1,6 +1,6 @@
-import { assertEquals } from "./testing";
+import { assertEquals } from "./testing.js";
 
-export function test_element_readdable() {
+export function test_element_readdable(awset) {
     const s = awset("a");
     s.add("a");
     s.remove("a");
@@ -10,7 +10,7 @@ export function test_element_readdable() {
     assertEquals(s.contains("a"), true);
 
 }
-export function test_bottom() {
+export function test_bottom(awset) {
     const s = awset("a");
     const bottom = awset("b");
 
@@ -22,12 +22,12 @@ export function test_bottom() {
     assertEquals(bottom.elements(), []);
 
     bottom.merge(s);
-    assertEquals(bottom.elements(), ["a", "b"]);
-    assertEquals(s.elements(), ["a", "b"]);
+    assertEquals(bottom.elements().sort(), ["a", "b"]);
+    assertEquals(s.elements().sort(), ["a", "b"]);
 
 }
 
-export function test_merge() {
+export function test_merge(awset) {
     const s = awset("a");
     s.add("a");
     s.add("b");
@@ -37,15 +37,15 @@ export function test_merge() {
     d.add("d");
 
     s.merge(d);
-    assertEquals(s.elements(), ["a", "b", "c", "d"]);
-    assertEquals(d.elements(), ["c", "d"]);
+    assertEquals(s.elements().sort(), ["a", "b", "c", "d"]);
+    assertEquals(d.elements().sort(), ["c", "d"]);
 
     d.merge(s);
-    assertEquals(d.elements(), ["a", "b", "c", "d"]);
-    assertEquals(s.elements(), ["a", "b", "c", "d"]);
+    assertEquals(d.elements().sort(), ["a", "b", "c", "d"]);
+    assertEquals(s.elements().sort(), ["a", "b", "c", "d"]);
 }
 
-export function test_addWins() {
+export function test_addWins(awset) {
     const s = awset("a");
     s.add("a");
 
@@ -64,7 +64,7 @@ export function test_addWins() {
     assertEquals(d.contains("a"), true);
 }
 
-export function test_concurrency() {
+export function test_concurrency(awset) {
     const s = awset("s");
     s.add("a");
     const d = awset("d");
@@ -75,15 +75,15 @@ export function test_concurrency() {
     s.merge(d);
     d.merge(s);
 
-    assertEquals(s.elements(), d.elements());
-    assertEquals(s.elements(), ["a", "b"]);
+    assertEquals(s.elements().sort(), d.elements().sort());
+    assertEquals(s.elements().sort(), ["a", "b"]);
 
     // Now s is in the future of d so it is not an add in concurrency
     s.remove("a");
     d.merge(s);
 
-    assertEquals(s.elements(), d.elements());
-    assertEquals(s.elements(), ["b"]);
+    assertEquals(s.elements().sort(), d.elements().sort());
+    assertEquals(s.elements().sort(), ["b"]);
 
     s.merge(d);
 
@@ -94,7 +94,7 @@ export function test_concurrency() {
     s.merge(d);
     d.merge(s);
 
-    assertEquals(s.elements(), d.elements());
-    assertEquals(s.elements(), ["c", "d"]);
+    assertEquals(s.elements().sort(), d.elements().sort());
+    assertEquals(s.elements().sort(), ["c", "d"]);
 
 }
