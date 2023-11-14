@@ -34,10 +34,10 @@ class BAWSet {
         return false;
     }
     elements() {
-        const result = [];
+        const result = new Set();
         for (const [element, tag] of this.set.elements()) {
             if (!this.removed.contains(tag)) {
-                result.push(element);
+                result.add(element);
             }
         }
         return result;
