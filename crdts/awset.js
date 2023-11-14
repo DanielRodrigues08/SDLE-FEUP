@@ -26,6 +26,8 @@ class AWSet {
         return this.items.keys();
     }
     merge(other) {
+
+        debugger;
         function setIntesection(a, b) {
             let res = new Set();
             for (const el of a.keys()) {
@@ -70,7 +72,6 @@ class AWSet {
                 result.add(item);
             }
             // f filtering function
-            debugger;
             for (const item of inThis) {
                 // usar o seen.max(tag) ???
                 if (!other.seen.has(item)) {
