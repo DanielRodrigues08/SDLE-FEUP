@@ -5,18 +5,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PWA CRDTS Test</title>
-    <meta name="theme-color" content="#317EFB"/>
+    <meta name="theme-color" content="#317EFB" />
     <link rel="icon" href="icon.png" type="image/x-ico">
     <link rel="manifest" href="manifest.json">
-    <script src="main.js">
+    <script src="main.js" type="module">
         if ('serviceworker' in navigator) {
             navigator.serviceWorker.register(".sw.js");
         }
     </script>
+    <style>
+        div.editorContainer {
+            display: flex;
+            border: 5px black solid;
+            gap: 1em;
+            padding: 1em;
+            flex-wrap: wrap;
+        }
+
+        div.editor {
+            flex-grow: 1;
+            flex-shrink: 1;
+            padding: 1em;
+            display: flex;
+            flex-direction: column;
+            border: 3px blue solid;
+            align-items: center;
+        }
+
+        div.editor>.controls {
+            display: flex;
+
+        }
+    </style>
 </head>
 
 <body>
     <h1>Progressive Web App?</h1>
+    <div class="app"></div>
 </body>
 
 </html>
