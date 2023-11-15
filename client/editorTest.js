@@ -1,49 +1,46 @@
 import { Syncer, syncControls } from "./syncer.js";
+import { ColorPicker } from "./colorPicker.js";
 export const createTester = (editors, syncerName) => {
     const editorContainer = document.createElement("div");
     editorContainer.className = "editorContainer";
 
+    let colors = ["#d0fffe",
+        "#fffddb",
+        "#e4ffde",
+        "#ffd3fd",
+        "#ffe7d3"];
+    const getColor = (i) => {
+        if (i < colors.length) {
+            return colors[i];
+        }
+        return "black";
+    }
+    // A mapping from color => list of editors
+    const groups = {}
+    const setEditorGroup = (editor, color) => {
+        editor.updateGroup = color;
+        editor.editor.style.backgroundColor = color;
+    }
+    let i = 0;
     for (const editor of editors) {
-        editor.shouldUpdate = false;
+        const color = getColor(i);
+        setEditorGroup(editor, color);
+        groups[color] = true;
+        editorContainer.appendChild(editor.editor);
+        i++;
+    }
+    const colorPicker = new ColorPicker(Object.keys(groups), getColor(0));
+    for (const editor of editors) {
         editor.editor.addEventListener("click", (e) => {
             if (e.shiftKey) {
-                editor.shouldUpdate = !editor.shouldUpdate;
-                editor.editor.toggleAttribute("toUpdate");
+                const activeColor = colorPicker.getActive();
+                editor.updateGroup = activeColor;
+                editor.editor.style.backgroundColor = activeColor;
             }
         })
         editorContainer.appendChild(editor.editor);
+
     }
-    const buildColorPicker = (colors) => {
-        const container = document.createElement("div");
-        container.className = "colorPicker";
-        const choices = {};
-        let active = null;
-
-        const setActive = (color) => {
-            if (active) {
-                choices[active].toggleAttribute("active");
-            }
-            active = color;
-            choices[active].toggleAttribute("active");
-
-        }
-        for (const color of colors) {
-            const id = color;
-            const choice = document.createElement("div");
-            choice.id = id;
-            choice.style.backgroundColor = color;
-            choice.addEventListener("click", (e) => {
-                console.log(e)
-                setActive(color);
-            });
-            container.appendChild(choice);
-            choices[color] = choice;
-        }
-        return container;
-    }
-    const colorPicker = buildColorPicker(["red", "white", "blue"]);
-
-
     const syncer = new Syncer();
     syncer.what = syncerName;
     syncer.sync = () => {
@@ -72,7 +69,7 @@ export const createTester = (editors, syncerName) => {
     const controls = document.createElement("div");
     controls.className = "controls";
     controls.appendChild(syncControls(syncer));
-    controls.appendChild(colorPicker);
+    controls.appendChild(colorPicker.element);
     app.appendChild(controls);
     app.appendChild(editorContainer);
     return app;
