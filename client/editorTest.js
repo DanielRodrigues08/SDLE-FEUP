@@ -3,7 +3,7 @@ import { ColorPicker } from "./colorPicker.js";
 export const createTester = (editors, syncerName) => {
     const editorContainer = document.createElement("div");
     editorContainer.className = "editorContainer";
-
+    const defaultBGColor = "white";
     let colors = ["#d0fffe",
         "#fffddb",
         "#e4ffde",
@@ -34,8 +34,12 @@ export const createTester = (editors, syncerName) => {
         editor.editor.addEventListener("click", (e) => {
             if (e.shiftKey) {
                 const activeColor = colorPicker.getActive();
-                editor.updateGroup = activeColor;
-                editor.editor.style.backgroundColor = activeColor;
+                if (editor.updateGroup === activeColor) {
+                    setEditorGroup(editor, defaultBGColor);
+                }
+                else {
+                    setEditorGroup(editor, activeColor);
+                }
             }
         })
         editorContainer.appendChild(editor.editor);
