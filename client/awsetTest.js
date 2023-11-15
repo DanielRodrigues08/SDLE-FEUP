@@ -1,5 +1,4 @@
 import { BAWSet } from "./crdts/bawset.js";
-import { Syncer, syncControls } from "./syncer.js";
 import { createTester } from "./editorTest.js";
 
 const editorContainer = document.createElement("div");
@@ -57,7 +56,7 @@ function awsetEdit(awset, n) {
     contents.append(inputEl);
     editor.appendChild(header);
     editor.appendChild(contents);
-    return { editor: editor, update: setElements, awset: awset };
+    return { editor: editor, update: setElements, crdt: awset };
 }
 
 export const bawsetTest = (n) => {
@@ -66,31 +65,5 @@ export const bawsetTest = (n) => {
         const bawset = new BAWSet();
         editors.push(awsetEdit(bawset, i));
     }
-
-
-    const syncer = new Syncer();
-    syncer.what = "awsets";
-    syncer.sync = () => {
-        const toUpdate = [];
-        for (const editor of editors) {
-            if (editor.shouldUpdate) {
-                toUpdate.push(editor);
-            }
-        }
-        for (const sender of toUpdate) {
-            for (const receiver of toUpdate) {
-                receiver.awset.merge(sender.awset);
-                receiver.update();
-            }
-        }
-    }
-    syncer.onTurnOn = function () {
-        console.log(`Syncing ${this.what} every ${this.delay} seconds`);
-    }
-    syncer.onTurnOff = function () {
-        console.log(`Switched off autosync on ${this.what}`);
-
-    }
-
-    return createTester(editors, syncer);
+    return createTester(editors, "counter");
 }

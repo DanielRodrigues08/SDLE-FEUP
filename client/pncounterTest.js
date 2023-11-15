@@ -1,5 +1,5 @@
 import { PNCounter } from "./crdts/pncounter.js";
-import { Syncer, syncControls } from "./syncer.js";
+import { createTester } from "./editorTest.js";
 
 function counterEdit(counter) {
     const edit = document.createElement("div");
@@ -39,39 +39,16 @@ function counterEdit(counter) {
         counter.decrement();
         setVal();
     })
-    return { editor: edit, update: setVal, counter: counter };
+    return { editor: edit, update: setVal, crdt: counter };
 }
 
 export const pncounterTest = (tags) => {
-    const editorContainer = document.createElement("div");
-    editorContainer.className = "editorContainer";
     const editors = [];
     for (const tag of tags) {
         const counter = new PNCounter(tag);
         const obj = counterEdit(counter);
         editors.push(obj);
-        editorContainer.appendChild(obj.editor);
     }
 
-    const syncer = new Syncer();
-    syncer.what = "counters";
-    syncer.sync = () => {
-        for (const sender of editors) {
-            for (const receiver of editors) {
-                receiver.counter.merge(sender.counter);
-                receiver.update();
-            }
-        }
-    }
-    syncer.onTurnOn = function () {
-        console.log(`Syncing ${this.what} every ${this.delay} seconds`);
-    }
-    syncer.onTurnOff = function () {
-        console.log(`Switched off autosync on ${this.what}`);
-
-    }
-    const app = document.createElement("testContainer");
-    app.appendChild(syncControls(syncer));
-    app.appendChild(editorContainer);
-    return app;
+    return createTester(editors, "counters");
 }
