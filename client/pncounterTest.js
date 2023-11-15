@@ -31,13 +31,15 @@ function counterEdit(counter) {
     controls.appendChild(val);
     controls.appendChild(dec);
 
-    inc.addEventListener("click", () => {
+    inc.addEventListener("click", (e) => {
         counter.increment();
         setVal();
+        e.stopPropagation();
     })
-    dec.addEventListener("click", () => {
+    dec.addEventListener("click", (e) => {
         counter.decrement();
         setVal();
+        e.stopPropagation();    
     })
     return { editor: edit, update: setVal, crdt: counter };
 }

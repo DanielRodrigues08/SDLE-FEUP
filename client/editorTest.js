@@ -32,14 +32,12 @@ export const createTester = (editors, syncerName) => {
     const colorPicker = new ColorPicker(Object.keys(groups), getColor(0));
     for (const editor of editors) {
         editor.editor.addEventListener("click", (e) => {
-            if (e.shiftKey) {
-                const activeColor = colorPicker.getActive();
-                if (editor.updateGroup === activeColor) {
-                    setEditorGroup(editor, defaultBGColor);
-                }
-                else {
-                    setEditorGroup(editor, activeColor);
-                }
+            const activeColor = colorPicker.getActive();
+            if (editor.updateGroup === activeColor) {
+                setEditorGroup(editor, defaultBGColor);
+            }
+            else {
+                setEditorGroup(editor, activeColor);
             }
         })
         editorContainer.appendChild(editor.editor);

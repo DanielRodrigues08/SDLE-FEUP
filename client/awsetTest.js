@@ -38,7 +38,7 @@ function awsetEdit(awset, n) {
     const addButton = document.createElement("button");
     addButton.innerText = "+";
     let adding = false;
-    addButton.addEventListener("click", () => {
+    addButton.addEventListener("click", (e) => {
         if (!adding) {
             inputEl.style.display = "block";
             inputEl.focus();
@@ -48,6 +48,7 @@ function awsetEdit(awset, n) {
 
         }
         adding = !adding;
+        e.stopPropagation();
     });
 
 

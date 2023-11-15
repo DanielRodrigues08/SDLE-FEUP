@@ -47,7 +47,7 @@ const syncDelayPicker = (s) => {
 
 const syncButtons = (s) => {
     const syncButton = document.createElement("button");
-    syncButton.innerText = "Sync Counters";
+    syncButton.innerText = `Sync`;
     syncButton.addEventListener("click", s.sync);
     const autoSync = document.createElement("input");
     autoSync.type = "checkbox";
