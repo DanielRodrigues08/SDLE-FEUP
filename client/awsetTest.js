@@ -1,5 +1,6 @@
 import { BAWSet } from "./crdts/bawset.js";
 import { Syncer, syncControls } from "./syncer.js";
+import { createTester } from "./editorTest.js";
 
 const editorContainer = document.createElement("div");
 editorContainer.className = "editorContainer";
@@ -63,15 +64,7 @@ export const bawsetTest = (n) => {
     const editors = [];
     for (let i = 0; i < n; i++) {
         const bawset = new BAWSet();
-        const obj = { ...awsetEdit(bawset, i), shouldUpdate: false };
-        editors.push(obj);
-        obj.editor.addEventListener("click", (e) => {
-            if (e.shiftKey) {
-                obj.shouldUpdate = !obj.shouldUpdate;
-                obj.editor.toggleAttribute("toUpdate");
-            }
-        })
-        editorContainer.appendChild(obj.editor);
+        editors.push(awsetEdit(bawset, i));
     }
 
 
@@ -85,7 +78,7 @@ export const bawsetTest = (n) => {
             }
         }
         for (const sender of toUpdate) {
-            for (const receiver of toUpdate){
+            for (const receiver of toUpdate) {
                 receiver.awset.merge(sender.awset);
                 receiver.update();
             }
@@ -98,9 +91,6 @@ export const bawsetTest = (n) => {
         console.log(`Switched off autosync on ${this.what}`);
 
     }
-    const app = document.createElement("div");
-    app.className = "bawsetTest";
-    app.appendChild(syncControls(syncer));
-    app.appendChild(editorContainer);
-    return app;
+
+    return createTester(editors, syncer);
 }
