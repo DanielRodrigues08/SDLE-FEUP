@@ -65,5 +65,5 @@ export const bawsetTest = (n) => {
         const bawset = new BAWSet();
         editors.push(awsetEdit(bawset, i));
     }
-    return createTester(editors, "counter");
+    return createTester(editors, "Basic Add Wins Set");
 }

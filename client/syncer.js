@@ -34,15 +34,14 @@ const syncDelayPicker = (s) => {
     const setDelay = (delay) => {
         syncDelayView.innerText = `Sync Delay ${delay}s`
         s.delay = delay;
-        s.setAuto(true);
     }
     syncTimeSlider.addEventListener("input", (e) => setDelay(Number(e.target.value)));
     setDelay(s.delay);
 
     const container = document.createElement("div");
-    container.class = "syncDelayPicker";
-    container.appendChild(syncTimeSlider);
+    container.className = "syncDelayPicker";
     container.appendChild(syncDelayView);
+    container.appendChild(syncTimeSlider);
     return container;
 }
 
@@ -56,16 +55,16 @@ const syncButtons = (s) => {
     const label = document.createElement("label");
     label.innerText = "Auto Sync: ";
     label.appendChild(autoSync);
-    const container = document.createElement("div");
-    container.appendChild(syncButton);
-    container.appendChild(label);
-    return container;
+    return [label, syncButton];
 }
 
 const syncControls = (s) => {
     const container = document.createElement("div");
+    container.className = "syncControls";
     container.appendChild(syncDelayPicker(s));
-    container.appendChild(syncButtons(s));
+    const [autoSync, sync] = syncButtons(s);
+    container.appendChild(autoSync);
+    container.appendChild(sync);
     return container;
 }
 export { Syncer, syncControls };
