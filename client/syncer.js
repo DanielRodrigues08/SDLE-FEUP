@@ -22,6 +22,12 @@ class Syncer {
 
         this.auto = turnOn;
     }
+    setDelay(delay) {
+        this.delay = delay;
+        if (this.auto) {
+            this.setAuto(true);
+        }
+    }
 }
 
 const syncDelayPicker = (s) => {
@@ -33,7 +39,7 @@ const syncDelayPicker = (s) => {
     const syncDelayView = document.createElement("p");
     const setDelay = (delay) => {
         syncDelayView.innerText = `Sync Delay ${delay}s`
-        s.delay = delay;
+        s.setDelay(delay);
     }
     syncTimeSlider.addEventListener("input", (e) => setDelay(Number(e.target.value)));
     setDelay(s.delay);

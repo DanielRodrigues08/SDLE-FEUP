@@ -4,11 +4,14 @@ export const createTester = (editors, syncerName) => {
     const editorContainer = document.createElement("div");
     editorContainer.className = "editorContainer";
     const defaultBGColor = "white";
-    let colors = ["#d0fffe",
-        "#fffddb",
+    let colors = [
+        "#d0fffe",
+        "#d5A9ff",
         "#e4ffde",
         "#ffd3fd",
-        "#ffe7d3"];
+        "#ffe7d3",
+    ];
+
     const getColor = (i) => {
         if (i < colors.length) {
             return colors[i];

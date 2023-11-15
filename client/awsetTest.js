@@ -48,28 +48,34 @@ function awsetEdit(awset, n) {
             setElements();
         }
     });
+    inputEl.addEventListener("click", e => e.stopPropagation());
     inputEl.type = "text";
     inputEl.style.display = "none";
+    const addElementContainer = document.createElement("div");
+    addElementContainer.className = "addElementContainer";
     const addButton = document.createElement("button");
     addButton.innerText = "+";
     let adding = false;
     addButton.addEventListener("click", (e) => {
         if (!adding) {
+            addButton.innerHTML = "-";
             inputEl.style.display = "block";
             inputEl.focus();
         }
         else {
             inputEl.style.display = "none";
+            addButton.innerHTML = "+";
 
         }
         adding = !adding;
         e.stopPropagation();
     });
 
+    addElementContainer.appendChild(addButton);
+    addElementContainer.appendChild(inputEl);
 
     contents.appendChild(list);
-    contents.appendChild(addButton);
-    contents.append(inputEl);
+    contents.appendChild(addElementContainer);
     editor.appendChild(header);
     editor.appendChild(contents);
     return { editor: editor, update: setElements, crdt: awset };
