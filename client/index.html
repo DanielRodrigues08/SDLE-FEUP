@@ -41,6 +41,12 @@
 
         }
 
+        .testContainer>.controls {
+            display: flex;
+            align-items: center;
+            gap: 2em;
+        }
+
         div.syncControls {
             display: flex;
             gap: 1em;
@@ -49,8 +55,26 @@
 
         div.syncDelayPicker {
             display: flex;
-            
 
+        }
+
+        div.colorPicker {
+            display: flex;
+        }
+
+        div.colorPicker>div {
+            width: 1.5em;
+            height: 1.5em;
+            transition: all 1s;
+        }
+
+        div.colorPicker>div:hover {
+            transform: scale(1.1);
+        }
+
+        div.colorPicker>div[active] {
+            border: 1px solid black;
+            border-radius: 1em;
         }
     </style>
 </head>

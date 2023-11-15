@@ -13,6 +13,36 @@ export const createTester = (editors, syncerName) => {
         })
         editorContainer.appendChild(editor.editor);
     }
+    const buildColorPicker = (colors) => {
+        const container = document.createElement("div");
+        container.className = "colorPicker";
+        const choices = {};
+        let active = null;
+
+        const setActive = (color) => {
+            if (active) {
+                choices[active].toggleAttribute("active");
+            }
+            active = color;
+            choices[active].toggleAttribute("active");
+
+        }
+        for (const color of colors) {
+            const id = color;
+            const choice = document.createElement("div");
+            choice.id = id;
+            choice.style.backgroundColor = color;
+            choice.addEventListener("click", (e) => {
+                console.log(e)
+                setActive(color);
+            });
+            container.appendChild(choice);
+            choices[color] = choice;
+        }
+        return container;
+    }
+    const colorPicker = buildColorPicker(["red", "white", "blue"]);
+
 
     const syncer = new Syncer();
     syncer.what = syncerName;
@@ -39,7 +69,11 @@ export const createTester = (editors, syncerName) => {
     }
     const app = document.createElement("div");
     app.className = "testContainer";
-    app.appendChild(syncControls(syncer));
+    const controls = document.createElement("div");
+    controls.className = "controls";
+    controls.appendChild(syncControls(syncer));
+    controls.appendChild(colorPicker);
+    app.appendChild(controls);
     app.appendChild(editorContainer);
     return app;
 }
