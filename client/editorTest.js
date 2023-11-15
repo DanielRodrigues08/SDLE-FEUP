@@ -48,16 +48,25 @@ export const createTester = (editors, syncerName) => {
     const syncer = new Syncer();
     syncer.what = syncerName;
     syncer.sync = () => {
-        const toUpdate = [];
+        const updateGroups = {};
+        for (const group of Object.keys(groups)) {
+            updateGroups[group] = [];
+        }
         for (const editor of editors) {
-            if (editor.shouldUpdate) {
-                toUpdate.push(editor);
+            const group = editor.updateGroup;
+            if (group != defaultBGColor) {
+                updateGroups[group].push(editor);
             }
         }
-        for (const sender of toUpdate) {
-            for (const receiver of toUpdate) {
-                receiver.crdt.merge(sender.crdt);
-                receiver.update();
+        for (const group of Object.values(updateGroups)) {
+            if (group.length <= 1) {
+                continue;
+            }
+            for (const sender of group) {
+                for (const receiver of group) {
+                    receiver.crdt.merge(sender.crdt);
+                    receiver.update();
+                }
             }
         }
     }
