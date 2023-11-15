@@ -14,15 +14,30 @@ function awsetEdit(awset, n) {
     const contents = document.createElement("div");
     contents.className = "contents";
 
-    const list = document.createElement("ul");
+    const list = document.createElement("div");
+    list.className = "list";
 
     const setElements = () => {
-        let res = "";
+        let res = [];
         for (const el of awset.elements()) {
-            const item = `<li>${el}</li>`;
-            res += item;
+            const item = document.createElement("div");
+            const p = document.createElement("p");
+            p.innerText = el;
+            item.className = "listItem";
+            const deleteItem = document.createElement("button");
+            deleteItem.innerText = "-";
+            deleteItem.addEventListener("click", (e) => {
+                console.log("Deleting " + el);
+                e.stopPropagation();
+                awset.remove(el);
+                setElements();
+            })
+            item.appendChild(deleteItem);
+            item.appendChild(p);
+
+            res.push(item);
         }
-        list.innerHTML = res;
+        list.replaceChildren(...res);
     }
     const inputEl = document.createElement("input");
     inputEl.addEventListener("keypress", e => {
