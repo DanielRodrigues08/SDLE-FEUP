@@ -6,7 +6,7 @@ import ssl
 directory_to_serve = "."
 
 # Set the port for your HTTPS server
-port = 8001
+port = 8080
 
 # Specify the SSL/TLS certificate and key files
 certfile = "cert.pem"
@@ -25,7 +25,7 @@ ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
 ssl_context.load_cert_chain(certfile=certfile, keyfile=keyfile)
 
 # Create the HTTPS server
-with socketserver.TCPServer(("0.0.0.0", port), MyHandler) as httpd:
+with socketserver.TCPServer(("localhost", port), MyHandler) as httpd:
     httpd.socket = ssl_context.wrap_socket(httpd.socket, server_side=True)
     print(f"Serving directory at https://localhost:{port}")
     httpd.serve_forever()
