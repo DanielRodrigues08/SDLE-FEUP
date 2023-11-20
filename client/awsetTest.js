@@ -1,14 +1,15 @@
+import { AWSet } from "../crdts/awset.js";
 import { BAWSet } from "./crdts/bawset.js";
 import { createTester } from "./editorTest.js";
 
 const editorContainer = document.createElement("div");
 editorContainer.className = "editorContainer";
-function awsetEdit(awset, n) {
+function awsetEdit(awset, n, name) {
     const editor = document.createElement("div");
     editor.className = "editor";
 
     const header = document.createElement("span")
-    header.innerText = `BAWSet ${n}`;
+    header.innerText = `${name} ${n}`;
     header.style.textAlign = "center";
 
     const contents = document.createElement("div");
@@ -81,11 +82,15 @@ function awsetEdit(awset, n) {
     return { editor: editor, update: setElements, crdt: awset };
 }
 
-export const bawsetTest = (n) => {
+// Higher order functions
+export const generalAwsetTestCreator = (awsetConstructor, syncerName, setName) => (n) => {
     const editors = [];
     for (let i = 0; i < n; i++) {
-        const bawset = new BAWSet();
-        editors.push(awsetEdit(bawset, i));
+        const awset = awsetConstructor(i);
+        editors.push(awsetEdit(awset, i, setName));
     }
-    return createTester(editors, "Basic Add Wins Set");
+    return createTester(editors, syncerName);
 }
+
+export const awsetTest = generalAwsetTestCreator(n => new AWSet(n), "AWSet Test", "AWSet");
+export const bawsetTest = generalAwsetTestCreator(n => new BAWSet(), "BAWSet Test", "BAWSet");

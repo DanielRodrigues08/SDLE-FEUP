@@ -1,4 +1,30 @@
 import { CausalContext } from "./causalcontext.js";
+function mapIntesection(a, b) {
+    let res = new Map();
+    for (const el of a.keys()) {
+        if (b.has(el) && b.get(el) == a.get(el)) {
+            res.set(el, a.get(el));
+        }
+    }
+    return res;
+}
+function mapDifference(a, b) {
+    let intersection = mapIntesection(a, b);
+    let res = new Map();
+    for (const el of a.keys()) {
+        if (!intersection.has(el)) {
+            res.set(el, a.get(el));
+        }
+    }
+    return res;
+}
+function safeGet(set, key, val) {
+    if (!set.has(key)) {
+        return val;
+    }
+    return set.get(key);
+
+}
 
 class AWSet {
     constructor(tag) {
@@ -12,81 +38,72 @@ class AWSet {
     add(element) {
         const contextItem = this.seen.next(this.tag);
         if (!this.items.has(element)) {
-            this.items.set(element, new Set());
+            this.items.set(element, new Map());
         }
-        this.items.get(element).add(contextItem);
+
+        this.items.get(element).set(this.tag, contextItem);
     }
     remove(element) {
+
         if (!this.items.has(element)) {
             return;
         }
         this.items.delete(element);
     }
     elements() {
-        return this.items.keys();
+        return Array.from(this.items.keys());
     }
+    contains(element) {
+        return this.items.has(element);
+    }
+
     merge(other) {
 
-        debugger;
-        function setIntesection(a, b) {
-            let res = new Set();
-            for (const el of a.keys()) {
-                if (b.has(el)) {
-                    res.add(el);
-                }
+        const allItems = new Set();
+        for (const item of this.items.keys()) { allItems.add(item) };
+        for (const item of other.items.keys()) { allItems.add(item) };
+
+        for (const item of allItems) {
+
+            const thisTags = safeGet(this.items, item, new Map());
+            const otherTags = safeGet(other.items, item, new Map());
+
+            const inCommon = mapIntesection(thisTags, otherTags);
+            const inThis = mapDifference(thisTags, otherTags);
+            const inOther = mapDifference(otherTags, thisTags);
+
+            const mergedTags = new Map();
+            for (const [tag, counter] of inCommon) {
+                mergedTags.set(tag, counter);
             }
-            return res;
+
+            const inThisNotSeenInOther = this._filter(inThis, other.seen);
+            const inOtherNotSeenInThis = this._filter(inOther, this.seen);
+
+            for (const [tag, counter] of inThisNotSeenInOther) {
+                mergedTags.set(tag, counter);
+            }
+
+            for (const [tag, counter] of inOtherNotSeenInThis) {
+                mergedTags.set(tag, counter);
+            }
+            if (mergedTags.size > 0) {
+                this.items.set(item, mergedTags);
+            }
+            else if (this.items.has(item)) {
+                this.items.delete(item);
+            }
         }
-        function setDifference(a, b) {
-            let intersection = setIntesection(a, b);
-            let res = new Set();
-            for (const el of a.keys()) {
-                if (!intersection.has(el)) {
-                    res.add(el);
-                }
+        this.seen.merge(other.seen);
+    }
+    _filter(tags, causalcontext) {
+        let results = [];
+        for (const [tag, counter] of tags) {
+            if (causalcontext.max(tag) < counter) {
+                results.push([tag, counter]);
             }
-            return res;
         }
-        function safeGet(set, key, val) {
-            if (!set.has(key)) {
-                set.set(key, val);
-            }
-            return set.get(key);
-
-        }
-        const allKeys = new Set();
-        for (const key of this.items.keys()) { allKeys.add(key) };
-        for (const key of other.items.keys()) { allKeys.add(key) };
-
-        for (const key of allKeys) {
-
-            const thisItems = safeGet(this.items, key, new Set());
-            const otherItems = safeGet(other.items, key, new Set());
-
-            const inCommon = setIntesection(thisItems, otherItems);
-            const inThis = setDifference(thisItems, otherItems);
-            const inOther = setDifference(otherItems, thisItems);
-
-            const result = new Set();
-            for (const item of inCommon) {
-                result.add(item);
-            }
-            // f filtering function
-            for (const item of inThis) {
-                // usar o seen.max(tag) ???
-                if (!other.seen.has(item)) {
-                    result.add(item);
-                }
-            }
-            // f filtering function
-            for (const item of inOther) {
-                // usar o seen.max(tag)??
-                if (!this.seen.has(item)) {
-                    result.add(item);
-                }
-            }
-            this.items.set(key, result);
-        }
+        return results;
     }
 
 }

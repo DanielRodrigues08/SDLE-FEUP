@@ -1,7 +1,7 @@
 import { assertEquals } from "./testing.js";
 
 export function test_element_readdable(awset) {
-    const s = awset("a");
+    const s = awset("tag1");
     s.add("a");
     s.remove("a");
     assertEquals(s.contains("a"), false);
@@ -11,13 +11,12 @@ export function test_element_readdable(awset) {
 
 }
 export function test_bottom(awset) {
-    const s = awset("a");
-    const bottom = awset("b");
+    const s = awset("tag1");
+    const bottom = awset("tag2");
 
     s.add("a");
     s.add("b");
     s.merge(bottom);
-
     assertEquals(s.elements(), ["a", "b"]);
     assertEquals(bottom.elements(), []);
 
@@ -28,11 +27,11 @@ export function test_bottom(awset) {
 }
 
 export function test_merge(awset) {
-    const s = awset("a");
+    const s = awset("tag1");
     s.add("a");
     s.add("b");
 
-    const d = awset("d");
+    const d = awset("tag2");
     d.add("c");
     d.add("d");
 
@@ -46,10 +45,10 @@ export function test_merge(awset) {
 }
 
 export function test_addWins(awset) {
-    const s = awset("a");
+    const s = awset("tag1");
     s.add("a");
 
-    const d = awset("d");
+    const d = awset("tag2");
     d.merge(s);
 
     d.add("a");
@@ -65,9 +64,9 @@ export function test_addWins(awset) {
 }
 
 export function test_concurrency(awset) {
-    const s = awset("s");
+    const s = awset("tag1");
     s.add("a");
-    const d = awset("d");
+    const d = awset("tag2");
     d.add("b");
     d.remove("a");
 

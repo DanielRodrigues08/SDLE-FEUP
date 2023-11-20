@@ -14,6 +14,17 @@ class CausalContext {
         this.items.set(tag, next);
         return next;
     }
+    merge(other) {
+        for (const [tag, counter] of other.items.entries()) {
+            if (this.items.has(tag)) {
+                const updated = Math.max(this.items.get(tag), counter);
+                this.items.set(tag, updated);
+            }
+            else {
+                this.items.set(tag, counter);
+            }
+        }
+    }
 }
 
 export { CausalContext };
