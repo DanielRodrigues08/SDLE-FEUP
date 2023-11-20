@@ -17,7 +17,6 @@ export function test_bottom(awset) {
     s.add("a");
     s.add("b");
     s.merge(bottom);
-
     assertEquals(s.elements(), ["a", "b"]);
     assertEquals(bottom.elements(), []);
 
