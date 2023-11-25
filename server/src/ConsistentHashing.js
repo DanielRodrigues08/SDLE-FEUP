@@ -1,11 +1,26 @@
 const crypto = require('crypto');
 
 class ConsistentHashing {
-  constructor(nodes = [], replicas = 3) {
-    this.nodes = new Map(); // { hash: node }
-    this.replicas = replicas;
+  static instance;
 
-    nodes.forEach(node => this.addNode(node));
+  static initialize(nodes, replicas) {
+    if (!this.instance) {
+      this.instance = new ConsistentHashing(nodes, replicas);
+      return this.instance;
+    } else {
+      throw new Error('ConsistentHashing has already been initialized.');
+    }
+  }
+
+  constructor(nodes = [], replicas = 3) {
+    if (!ConsistentHashing.instance) {
+      this.nodes = new Map(); // { hash: node }
+      this.replicas = replicas;
+      nodes.forEach(node => this.addNode(node));
+    }
+
+    console.log('Duplicate');
+    return ConsistentHashing.instance;
   }
 
   addNode(node) {
@@ -58,6 +73,13 @@ class ConsistentHashing {
     console.log('Consistent Hashing Ring:');
     ring.forEach(entry => console.log(`Hash: ${entry.hash}, Node: ${entry.node}`));
   }
+  static getInstance() {
+    if (!this.instance) {
+      console.error('ConsistentHashing has not been initialized.');
+    }
+    return this.instance;
+  }
 }
+
 
 module.exports = ConsistentHashing;

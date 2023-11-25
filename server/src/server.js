@@ -1,17 +1,17 @@
 const http = require('http');
 const axios = require('axios');
 const bodyParser = require('body-parser');
-const ConsistentHashing = require('./ConsistentHashing'); // Adjust the path accordingly
+const ConsistentHashing = require('./ConsistentHashing');
 
 const PORT = 3000;
+const nodeServers = process.argv.slice(3);
+const numInstances = process.argv[2] || 3;
 
 
-const instances = process.argv[2] || 3
-const nodeServers = []
-for (let i = 0; i < instances; i++) {
-  nodeServers.push(`http://localhost:${4000 + i}`)
-}
-const consistentHashing = new ConsistentHashing(nodeServers, instances);
+ConsistentHashing.initialize(nodeServers, numInstances);
+
+// Now you can access the instance using the static method
+const consistentHashing = ConsistentHashing.getInstance();
 
 const server = http.createServer(async (req, res) => {
   try {
@@ -23,14 +23,21 @@ const server = http.createServer(async (req, res) => {
 
       req.on('end', async () => {
         try {
-          const requestBody = JSON.parse(Buffer.concat(requestData).toString());
+          const requestBodyString = Buffer.concat(requestData).toString();
+          const requestBody = typeof requestBodyString === 'string' ? JSON.parse(requestBodyString) : requestBodyString;
+          if (typeof requestBody !== 'object' || requestBody === null || !('requestId' in requestBody || 'id' in requestBody)) {
+            throw new Error(`Invalid request body format. Received: ${requestBodyString}`);
+          }
           const requestId = requestBody.id;
-          const targetNode = consistentHashing.getNode(requestId);
+          const targetNode = nodeServers[Math.floor(Math.random() * nodeServers.length)];
+          const realTargetNode = consistentHashing.getNode(requestId);
+
+
 
           if (targetNode) {
             const response = await axios.post(`${targetNode}/handleRequest`, { requestId });
             res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ message: `Request forwarded to ${targetNode}`, targetNode, response: response.data }));
+            res.end(JSON.stringify({ message: `Request forwarded to ${targetNode} but ${realTargetNode}`, targetNode, response: response.data }));
           } else {
             res.writeHead(500, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ error: 'No available node servers' }));

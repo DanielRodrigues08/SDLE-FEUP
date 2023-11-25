@@ -1,9 +1,19 @@
 const http = require('http');
 const axios = require('axios');
 
+const ConsistentHashing = require('./ConsistentHashing');
+
 
 const PORT = process.argv[2] || 4000;
 const n    = process.argv[3] || 0;
+const numInstances = process.argv[4] || 3;
+const nodeServers = process.argv.slice(5);
+const stringPort = `http://localhost:${PORT}`;
+
+ConsistentHashing.initialize(nodeServers, numInstances);
+
+// Now you can access the instance using the static method
+const consistentHashing = ConsistentHashing.getInstance();
 
 const server = http.createServer(async (req, res) => {
   try {
@@ -19,12 +29,27 @@ const server = http.createServer(async (req, res) => {
           const requestBody = JSON.parse(Buffer.concat(requestData).toString());
           // You can now use the requestBody for processing the request
 
+          console.log(consistentHashing.visualizeRing())
+
           // Example: Log the received data
           console.log(`Data received at Server ${n}:`, requestBody);
+          //console.log(consistentHashing.visualizeRing())
+          const targetNode = consistentHashing.getNode(requestBody.requestId);
+          const targetPort = String(4000 + parseInt(targetNode));
+          const requestId = requestBody.requestId;
+          console.log(`Target node: ${targetNode}`)
+          console.log(`n: ${n}`)
+          if (targetNode != stringPort) {
+            console.log(`Forwarding request to ${targetNode}`);
+            const response = await axios.post(`${targetNode}/handleRequest`, { requestId });
+            console.log(`Response from ${targetNode}:`, response.data);
+            res.end(JSON.stringify({ message: `\n Request handled by Server ${targetNode}` }));
 
-          // Respond to the request
+          } else {
+
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ message: `\n Request handled by Server ${n}` }));
+          }
         } catch (error) {
           console.error('Error parsing request data:', error.message);
           res.writeHead(400, { 'Content-Type': 'text/plain' });
