@@ -10,10 +10,7 @@ const numInstances = process.argv[4] || 3;
 const nodeServers = process.argv.slice(5);
 const stringPort = `http://localhost:${PORT}`;
 
-ConsistentHashing.initialize(nodeServers, numInstances);
-
-// Now you can access the instance using the static method
-const consistentHashing = ConsistentHashing.getInstance();
+const consistentHashing = new ConsistentHashing(nodeServers, numInstances);
 
 const server = http.createServer(async (req, res) => {
   try {
@@ -29,7 +26,7 @@ const server = http.createServer(async (req, res) => {
           const requestBody = JSON.parse(Buffer.concat(requestData).toString());
           // You can now use the requestBody for processing the request
 
-          console.log(consistentHashing.visualizeRing())
+          //console.log(consistentHashing.visualizeRing())
 
           // Example: Log the received data
           console.log(`Data received at Server ${n}:`, requestBody);
