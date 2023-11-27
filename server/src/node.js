@@ -1,7 +1,7 @@
+import { AWSet } from "crdts";
 const ConsistentHashing = require("./ConsistentHashing");
 const express = require('express')
 const axios = require('axios')
-const AWSet = require('../../crdts/awset')
 
 class Node {
     constructor(hostname, port, allNodes, numInstances, gossipPeriod = 5000, protocol = "http") {
@@ -44,7 +44,7 @@ class Node {
     handleGossip(req, res) {
         this.nodes.merge(AWSet.fromJSON(req.body.nodes))
         console.log(`Received gossip from ${req.body.from}!\n`)
-        res.status(200).json({nodes: this.nodes.toJSON()});
+        res.status(200).json({ nodes: this.nodes.toJSON() });
     }
 
     processRequest(req, res) {
@@ -52,7 +52,7 @@ class Node {
     }
 
     getNodeList(req, res) {
-        res.json({nodes: JSON.stringify(this.nodes.elements())})
+        res.json({ nodes: JSON.stringify(this.nodes.elements()) })
     }
 
     async startGossip() {
