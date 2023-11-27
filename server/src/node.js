@@ -19,15 +19,10 @@ class Node {
     }
 
     run() {
-        this.server.post('/processRequest', (req, res) => {
-            this.processRequest(req, res)
-        })
-        this.server.put('/gossip', (req, res) => {
-            this.handleGossip(req, res)
-        })
-        this.server.get('/nodeList', (req, res) => {
-            this.getNodeList(req, res)
-        })
+
+        this.server.post('/processRequest', this.processRequest.bind(this))
+        this.server.put('/gossip', this.handleGossip.bind(this))
+        this.server.get('/nodeList', this.getNodeList.bind(this))
 
         this.server.listen(this.port, () => {
             setInterval(() => this.startGossip(), this.gossipPeriod) // Arrow function preserves 'this'
