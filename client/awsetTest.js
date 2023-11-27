@@ -1,6 +1,4 @@
-import { AWSet } from "../crdts/awset.js";
-import { BAWSet } from "./crdts/bawset.js";
-import { ROSet } from "./crdts/roset.js";
+import { AWSet, BAWSet, ROSet } from "crdts";
 import { createTester } from "./editorTest.js";
 
 const editorContainer = document.createElement("div");

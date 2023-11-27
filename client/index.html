@@ -8,6 +8,14 @@
     <meta name="theme-color" content="#317EFB" />
     <link rel="icon" href="icon.png" type="image/x-ico">
     <link rel="manifest" href="manifest.json">
+    <script type="importmap">
+    {
+        "imports": {
+        "crdts": "../crdts/index.js"
+        }
+    }
+    </script>
+
     <script src="main.js" type="module">
         if ('serviceworker' in navigator) {
             navigator.serviceWorker.register(".sw.js");
