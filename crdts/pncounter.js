@@ -27,5 +27,19 @@ class PNCounter {
         return toAdd - toSub;
 
     }
+    toJSON() {
+        const res = {};
+        for (const key in this) {
+            res[key] = JSON.stringify(key);
+        }
+        return res;
+    }
+    static fromJSON(json) {
+        const res = {};
+        res.tag = json.tag;
+        res.positive = PCounter.fromJSON(json.positive);
+        res.negative = PCounter.fromJSON(json.negative);
+        return res;
+    }
 }
 export { PNCounter };
