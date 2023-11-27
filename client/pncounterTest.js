@@ -1,4 +1,4 @@
-import { PNCounter } from "./crdts/pncounter.js";
+import { PNCounter } from "crdts";
 import { createTester } from "./editorTest.js";
 
 function counterEdit(counter) {
@@ -39,7 +39,7 @@ function counterEdit(counter) {
     dec.addEventListener("click", (e) => {
         counter.decrement();
         setVal();
-        e.stopPropagation();    
+        e.stopPropagation();
     })
     return { editor: edit, update: setVal, crdt: counter };
 }
