@@ -25,6 +25,19 @@ class CausalContext {
             }
         }
     }
+    toJSON() {
+        const res = {};
+        res.items = Object.fromEntries(this.items);
+        return res;
+    }
+    static fromJSON(json) {
+        const res = new CausalContext();
+        res.items = new Map();
+        for (const key in json.items) {
+            res.items.set(key, json.items[key]);
+        }
+        return res;
+    }
 }
 
 export { CausalContext };
