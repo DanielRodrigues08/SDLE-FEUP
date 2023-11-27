@@ -27,5 +27,18 @@ class ROSet {
         this.set.merge(other.set);
         this.toombstone.merge(other.toombstone);
     }
+    toJSON() {
+        const res = {};
+        for (const key in this) {
+            res[key] = JSON.stringify(this[key]);
+        }
+        return res;
+    }
+    static fromJSON(json) {
+        const res = new ROSet();
+        res.set = GSet.fromJSON(json.set);
+        res.toombstone = GSet.fromJSON(json.toombstone);
+        return res;
+    }
 }
 export { ROSet };
