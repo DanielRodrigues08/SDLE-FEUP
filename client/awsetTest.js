@@ -1,5 +1,6 @@
 import { AWSet } from "../crdts/awset.js";
 import { BAWSet } from "./crdts/bawset.js";
+import { ROSet } from "./crdts/roset.js";
 import { createTester } from "./editorTest.js";
 
 const editorContainer = document.createElement("div");
@@ -94,3 +95,4 @@ export const generalAwsetTestCreator = (awsetConstructor, syncerName, setName) =
 
 export const awsetTest = generalAwsetTestCreator(n => new AWSet(n), "AWSet Test", "AWSet");
 export const bawsetTest = generalAwsetTestCreator(n => new BAWSet(), "BAWSet Test", "BAWSet");
+export const rosetTest = generalAwsetTestCreator(n => new ROSet(), "ROSet Test", "Toombstone Set");

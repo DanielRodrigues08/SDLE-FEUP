@@ -25,7 +25,7 @@ ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
 ssl_context.load_cert_chain(certfile=certfile, keyfile=keyfile)
 
 # Create the HTTPS server
-with socketserver.TCPServer(("localhost", port), MyHandler) as httpd:
+with socketserver.TCPServer(("", port), MyHandler) as httpd:
     httpd.socket = ssl_context.wrap_socket(httpd.socket, server_side=True)
     print(f"Serving directory at https://localhost:{port}")
     httpd.serve_forever()
