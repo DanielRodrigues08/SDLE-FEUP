@@ -105,6 +105,30 @@ class AWSet {
         }
         return results;
     }
+    toJSON() {
+        const res = {};
+        res.tag = this.tag;
+        res.seen = this.seen.toJSON();
+        res.items = {};
+        for (const key of this.items.keys()) {
+            res.items[key] = Object.fromEntries(this.items.get(key));
+        }
+        return res;
+    }
+    static fromJSON(json) {
+        const res = new AWSet(json.tag);
+        res.seen = CausalContext.fromJSON(json.seen);
+        res.items = new Map();
+
+        for (const key in json.items) {
+            const map = new Map();
+            for (const deepKey in json.items[key]) {
+                map.set(key, json.items[key][deepKey]);
+            }
+            res.items.set(key, map);
+        }
+        return res;
+    }
 
 }
 
