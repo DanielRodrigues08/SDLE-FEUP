@@ -17,5 +17,18 @@ class GSet {
             this.set.add(key);
         }
     }
+    toJSON() {
+        const res = {};
+        for (const key of this.set.keys()) {
+            res[key] = true;
+        }
+        return res;
+    }
+    static fromJSON(json) {
+        const res = new GSet();
+        for (const key of Object.keys(json)) {
+            res.set.add(key);
+        }
+    }
 }
 export { GSet };
