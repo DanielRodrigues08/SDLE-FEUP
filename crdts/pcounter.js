@@ -24,12 +24,26 @@ class PCounter {
         }
     }
 
-    increment(amount=1) {
+    increment(amount = 1) {
         if (amount < 0) {
             throw new Error("Trying to increment PCounter with a negative value!");
         }
         const current = this.map.get(this.tag);
         this.map.set(this.tag, current + amount);
+    }
+    toJSON() {
+        const res = {};
+        res.tag = this.tag;
+        res.map = Object.fromEntries(this.map);
+        return res;
+
+    }
+    static fromJSON(json) {
+        const res = new PCounter(json.tag);
+        for (const key in json.map) {
+            res.map.set(key, json.map[key]);
+        }
+        return res;
     }
 
 
