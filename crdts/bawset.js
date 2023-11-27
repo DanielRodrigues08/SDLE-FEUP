@@ -47,6 +47,20 @@ class BAWSet {
         this.set.merge(other.set);
         this.removed.merge(other.removed);
     }
+    toJSON() {
+        const res = {};
+        for (const key in this) {
+            res[key] = JSON.stringify(this[key]);
+        }
+        return res;
+    }
+    static fromJSON(json) {
+        const res = new BAWSet();
+        for (const key in json) {
+            res[key] = GSet.fromJSON(json[key]);
+        }
+        return res;
+    }
 }
 
 export { BAWSet };
