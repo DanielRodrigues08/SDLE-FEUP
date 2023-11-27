@@ -4,7 +4,7 @@ const axios = require('axios')
 const AWSet = require('../../crdts/awset')
 
 class Node {
-    constructor(hostname, port, allNodes, numInstances, gossipPeriod = 10000, protocol = "http") {
+    constructor(hostname, port, allNodes, numInstances, gossipPeriod = 5000, protocol = "http") {
         this.host = hostname
         this.port = port
         this.address = `${protocol}://${hostname}:${port}`
@@ -19,9 +19,15 @@ class Node {
     }
 
     run() {
-        this.server.post('/processRequest', this.processRequest)
-        this.server.put('/gossip', this.handleGossip)
-        this.server.get('/nodeList', this.getNodeList)
+        this.server.post('/processRequest', (req, res) => {
+            this.processRequest(req, res)
+        })
+        this.server.put('/gossip', (req, res) => {
+            this.handleGossip(req, res)
+        })
+        this.server.get('/nodeList', (req, res) => {
+            this.getNodeList(req, res)
+        })
 
         this.server.listen(this.port, () => {
             setInterval(() => this.startGossip(), this.gossipPeriod) // Arrow function preserves 'this'
@@ -36,10 +42,9 @@ class Node {
     }
 
     handleGossip(req, res) {
-        const nodes = req.body.nodes
-        this.nodes.merge(nodes)
-        console.log(`Received gossip from ${req.connection.remoteAddress}! I am ${this.address}`)
-        res.sendStatus(200).json({nodes: this.nodes.toJSON()})
+        this.nodes.merge(AWSet.fromJSON(req.body.nodes))
+        console.log(`Received gossip from ${req.body.from}!\n`)
+        res.status(200).json({nodes: this.nodes.toJSON()});
     }
 
     processRequest(req, res) {
@@ -61,13 +66,15 @@ class Node {
         } while (randomNode === this.address)
 
         try {
-            console.log(`Gossiping with ${randomNode}! I am ${this.address}`)
-            const response = await axios.put(`${randomNode}/gossip`, {nodes: this.nodes})
-            if (response.status === 200) {
-                this.nodes.merge(AWSet.fromJSON(response.data.nodes))
-            }
+            console.log(`Gossiping with ${randomNode}!`)
+            const response = await axios.put(`${randomNode}/gossip`, {
+                nodes: this.nodes.toJSON(),
+                from: this.address
+            })
+            this.nodes.merge(AWSet.fromJSON(response.data.nodes))
+            console.log(`Gossip with ${randomNode} successful!\n`)
         } catch (e) {
-            console.log(`Failed to gossip with ${randomNode}! I am ${this.address}`)
+            console.log(`Failed to gossip with ${randomNode}!\n`)
             this.nodes.remove(randomNode)
         }
     }
