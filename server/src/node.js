@@ -1,77 +1,76 @@
-const http = require('http');
-const axios = require('axios');
+const ConsistentHashing = require("./ConsistentHashing");
+const express = require('express')
+const axios = require('axios')
+const AWSet = require('../../crdts/awset')
 
-const ConsistentHashing = require('./ConsistentHashing');
-
-
-const PORT = process.argv[2] || 4000;
-const n    = process.argv[3] || 0;
-const numInstances = process.argv[4] || 3;
-const nodeServers = process.argv.slice(5);
-const stringPort = `http://localhost:${PORT}`;
-
-const consistentHashing = new ConsistentHashing(nodeServers, numInstances);
-
-const server = http.createServer(async (req, res) => {
-  try {
-    if (req.url === '/handleRequest' && req.method === 'POST') {
-      // Handle the 'handleRequest' endpoint
-      const requestData = [];
-      req.on('data', chunk => {
-        requestData.push(chunk);
-      });
-
-      req.on('end', async () => {
-        try {
-          const requestBody = JSON.parse(Buffer.concat(requestData).toString());
-          // You can now use the requestBody for processing the request
-
-          //console.log(consistentHashing.visualizeRing())
-
-          // Example: Log the received data
-          console.log(`Data received at Server ${n}:`, requestBody);
-          //console.log(consistentHashing.visualizeRing())
-          const targetNode = consistentHashing.getNode(requestBody.requestId);
-          const targetPort = String(4000 + parseInt(targetNode));
-          const requestId = requestBody.requestId;
-          console.log(`Target node: ${targetNode}`)
-          console.log(`n: ${n}`)
-          if (targetNode != stringPort) {
-            console.log(`Forwarding request to ${targetNode}`);
-            const response = await axios.post(`${targetNode}/handleRequest`, { requestId });
-            console.log(`Response from ${targetNode}:`, response.data);
-            res.end(JSON.stringify({ message: `\n Request handled by Server ${targetNode}` }));
-
-          } else {
-
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ message: `\n Request handled by Server ${n}` }));
-          }
-        } catch (error) {
-          console.error('Error parsing request data:', error.message);
-          res.writeHead(400, { 'Content-Type': 'text/plain' });
-          res.end('Bad Request');
+class Node {
+    constructor(hostname, port, allNodes, numInstances, gossipPeriod = 10000, protocol = "http") {
+        this.host = hostname
+        this.port = port
+        this.address = `${protocol}://${hostname}:${port}`
+        this.consistentHashing = new ConsistentHashing(allNodes, numInstances)
+        this.nodes = new AWSet(this.address)
+        for (const node of allNodes) {
+            this.nodes.add(node)
         }
-      });
-    } else {
-      // Make a request to Server 1
-      const response = await axios.get('http://127.0.0.1:3000/');
-
-      // Log the message from Server 1
-      console.log('Message from Server 1:', response.data);
-
-      // Respond with the combined message
-      res.writeHead(404, { 'Content-Type': 'text/plain' });
-      res.end(`Invalid URL: ${req.url}`);
-
+        this.server = express()
+        this.server.use(express.json())
+        this.gossipPeriod = gossipPeriod
     }
-  } catch (error) {
-    console.error('Error processing request:', error.message);
-    res.writeHead(500, { 'Content-Type': 'text/plain' });
-    res.end('Internal Server Error');
-  }
-});
 
-server.listen(PORT, () => {
-  console.log(`Node running at http://localhost:${PORT}/`);
-});
+    run() {
+        this.server.post('/processRequest', this.processRequest)
+        this.server.put('/gossip', this.handleGossip)
+        this.server.get('/nodeList', this.getNodeList)
+
+        this.server.listen(this.port, () => {
+            setInterval(() => this.startGossip(), this.gossipPeriod) // Arrow function preserves 'this'
+            console.log(`Node listening on port ${this.port}!`)
+        })
+    }
+
+    close() {
+        if (this.server) {
+            this.server.close(() => console.log(`Server ${this.host + this.port} closed! `))
+        }
+    }
+
+    handleGossip(req, res) {
+        const nodes = req.body.nodes
+        this.nodes.merge(nodes)
+        console.log(`Received gossip from ${req.connection.remoteAddress}! I am ${this.address}`)
+        res.sendStatus(200).json({nodes: this.nodes.toJSON()})
+    }
+
+    processRequest(req, res) {
+        console.log("Not implemented!")
+    }
+
+    getNodeList(req, res) {
+        res.json({nodes: JSON.stringify(this.nodes.elements())})
+    }
+
+    async startGossip() {
+        if (this.nodes.elements().length < 2) {
+            return
+        }
+
+        let randomNode;
+        do {
+            randomNode = this.nodes.elements()[Math.floor(Math.random() * this.nodes.elements().length)];
+        } while (randomNode === this.address)
+
+        try {
+            console.log(`Gossiping with ${randomNode}! I am ${this.address}`)
+            const response = await axios.put(`${randomNode}/gossip`, {nodes: this.nodes})
+            if (response.status === 200) {
+                this.nodes.merge(AWSet.fromJSON(response.data.nodes))
+            }
+        } catch (e) {
+            console.log(`Failed to gossip with ${randomNode}! I am ${this.address}`)
+            this.nodes.remove(randomNode)
+        }
+    }
+}
+
+module.exports = Node;
