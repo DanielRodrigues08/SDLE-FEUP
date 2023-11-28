@@ -29,7 +29,7 @@ class ConsistentHashing {
         }
     }
 
-    getNode(key) {
+    getNode(key, count = 3) {
         if (this.nodes.size === 0) {
             return null;
         }
@@ -38,14 +38,38 @@ class ConsistentHashing {
         const keys = Array.from(this.nodes.keys());
         const sortedKeys = keys.sort();
 
+        const uniqueNodesSet = new Set();
+        const nodeArray = [];
+        
         for (const nodeHash of sortedKeys) {
-            if (hash <= nodeHash) {
-                return this.nodes.get(nodeHash);
+            if (hash <= nodeHash)  {
+
+                const node = this.nodes.get(nodeHash);
+                if (!uniqueNodesSet.has(node)) {
+                    uniqueNodesSet.add(node);
+                    nodeArray.push(node);
+
+                    if (uniqueNodesSet.size >= count)
+                        break;
+                }
+
             }
         }
 
-        // If the hash is greater than all nodes, return the first node
-        return this.nodes.get(sortedKeys[0]);
+        while (uniqueNodesSet.size < count) {
+            for (let i = 0; i < sortedKeys.length; i++) {
+                const node = this.nodes.get(sortedKeys[i]);
+                if (!uniqueNodesSet.has(node)) {
+                    uniqueNodesSet.add(node);
+                    nodeArray.push(node);
+
+                    if (uniqueNodesSet.size >= count)
+                        return nodeArray;
+                }
+            }
+        }
+
+        return nodeArray;
     }
 
     getReplicaKey(node, replicaIndex) {
