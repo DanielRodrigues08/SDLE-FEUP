@@ -54,3 +54,4 @@ export async function testFile(filePath) {
 }
 
 // TODO: discover test files inside a test folder
+// TODO: discovery should be based on test_ prefix so test-general-awset names should change
