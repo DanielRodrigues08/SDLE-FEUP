@@ -1,4 +1,4 @@
-import * as crypto from "crypto";
+import crypto from "crypto";
 
 class ConsistentHashing {
 
@@ -10,8 +10,9 @@ class ConsistentHashing {
     }
 
     addNode(node) {
-        if (this.nodes.values.hasOwnProperty(node))
+        if (Array.from(this.nodes.values()).includes(node)) {
             return
+        }
 
         for (let i = 0; i < this.replicas; i++) {
             const replicaKey = this.getReplicaKey(node, i);
@@ -19,14 +20,31 @@ class ConsistentHashing {
         }
     }
 
+
     removeNode(node) {
-        if (!this.nodes.values.hasOwnProperty(node))
+        if (!Array.from(this.nodes.values()).includes(node)) {
             return
+        }
 
         for (let i = 0; i < this.replicas; i++) {
             const replicaKey = this.getReplicaKey(node, i);
             this.nodes.delete(replicaKey);
         }
+    }
+
+    update(incomingNodes) {
+        const existingNodes = new Set(this.nodes.values());
+
+        const newNodes = incomingNodes.filter(node => !existingNodes.has(node));
+        const removedNodes = Array.from(existingNodes).filter(node => !incomingNodes.includes(node));
+
+        /*console.log("Removing nodes:")
+        console.log(removedNodes);
+        console.log("Adding nodes:")
+        console.log(newNodes);*/
+
+        newNodes.forEach(node => this.addNode(node));
+        removedNodes.forEach(node => this.removeNode(node));
     }
 
     getNode(key) {
@@ -56,14 +74,13 @@ class ConsistentHashing {
         return parseInt(crypto.createHash('md5').update(data).digest('hex'), 16);
     }
 
-    visualizeRing() {
-        const ring = [];
+    getFormattedRingJSON() {
+        const ringEntries = [];
         for (const [hash, node] of this.nodes) {
-            ring.push({ hash, node });
+            ringEntries.push({hash, node});
         }
-        ring.sort((a, b) => a.hash - b.hash);
-        console.log('Consistent Hashing Ring:');
-        ring.forEach(entry => console.log(`Hash: ${entry.hash}, Node: ${entry.node}`));
+        ringEntries.sort((a, b) => a.hash - b.hash);
+        return ringEntries.map(entry => ({hash: entry.hash, node: entry.node}));
     }
 
     getNodes() {
@@ -71,4 +88,4 @@ class ConsistentHashing {
     }
 }
 
-export { ConsistentHashing };
+export {ConsistentHashing};

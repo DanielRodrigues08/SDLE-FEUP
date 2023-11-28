@@ -1,5 +1,5 @@
-import * as http from "http";
-import * as axios from "axios";
+import http from "http";
+import axios from "axios";
 import { ConsistentHashing } from "./ConsistentHashing";
 
 

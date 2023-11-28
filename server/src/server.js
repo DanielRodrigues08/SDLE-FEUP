@@ -1,5 +1,5 @@
-import * as axios from "axios";
-import * as http from "http";
+import axios from "axios";
+import http from "http";
 
 const PORT = 3000;
 const nodeServers = process.argv.slice(3);
