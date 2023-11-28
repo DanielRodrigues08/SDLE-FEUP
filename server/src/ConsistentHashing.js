@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+import * as crypto from "crypto";
 
 class ConsistentHashing {
 
@@ -59,7 +59,7 @@ class ConsistentHashing {
     visualizeRing() {
         const ring = [];
         for (const [hash, node] of this.nodes) {
-            ring.push({hash, node});
+            ring.push({ hash, node });
         }
         ring.sort((a, b) => a.hash - b.hash);
         console.log('Consistent Hashing Ring:');
@@ -71,5 +71,4 @@ class ConsistentHashing {
     }
 }
 
-
-module.exports = ConsistentHashing;
+export { ConsistentHashing };

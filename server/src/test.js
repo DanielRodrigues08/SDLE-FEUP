@@ -1,6 +1,5 @@
 // ES6 imports/exports running in node
 import { AWSet } from "crdts";
-
 const a = new AWSet("a");
 
 a.add("Daniel");

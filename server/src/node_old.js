@@ -1,11 +1,10 @@
-const http = require('http');
-const axios = require('axios');
-
-const ConsistentHashing = require('./ConsistentHashing');
+import * as http from "http";
+import * as axios from "axios";
+import { ConsistentHashing } from "./ConsistentHashing";
 
 
 const PORT = process.argv[2] || 4000;
-const n    = process.argv[3] || 0;
+const n = process.argv[3] || 0;
 const numInstances = process.argv[4] || 3;
 const nodeServers = process.argv.slice(5);
 const stringPort = `http://localhost:${PORT}`;
@@ -44,8 +43,8 @@ const server = http.createServer(async (req, res) => {
 
           } else {
 
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ message: `\n Request handled by Server ${n}` }));
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ message: `\n Request handled by Server ${n}` }));
           }
         } catch (error) {
           console.error('Error parsing request data:', error.message);

@@ -1,5 +1,5 @@
-const http = require('http');
-const axios = require('axios');
+import * as axios from "axios";
+import * as http from "http";
 
 const PORT = 3000;
 const nodeServers = process.argv.slice(3);
@@ -24,34 +24,34 @@ const server = http.createServer(async (req, res) => {
 
 
                     if (targetNode) {
-                        const response = await axios.post(`${targetNode}/handleRequest`, {requestId});
-                        res.writeHead(200, {'Content-Type': 'application/json'});
+                        const response = await axios.post(`${targetNode}/handleRequest`, { requestId });
+                        res.writeHead(200, { 'Content-Type': 'application/json' });
                         res.end(JSON.stringify({
                             message: `Request forwarded to ${targetNode}}`,
                             targetNode,
                             response: response.data
                         }));
                     } else {
-                        res.writeHead(500, {'Content-Type': 'application/json'});
-                        res.end(JSON.stringify({error: 'No available node servers'}));
+                        res.writeHead(500, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify({ error: 'No available node servers' }));
                     }
                 } catch (error) {
                     console.error('Error parsing request data:', error.message);
-                    res.writeHead(400, {'Content-Type': 'text/plain'});
+                    res.writeHead(400, { 'Content-Type': 'text/plain' });
                     res.end('Bad Request');
                 }
             });
         } else if (req.method === 'GET' && req.url === '/visualizeRing') {
             consistentHashing.visualizeRing();
-            res.writeHead(200, {'Content-Type': 'text/plain'});
+            res.writeHead(200, { 'Content-Type': 'text/plain' });
             res.end('Check the server console for the consistent hashing ring visualization.');
         } else {
-            res.writeHead(404, {'Content-Type': 'text/plain'});
+            res.writeHead(404, { 'Content-Type': 'text/plain' });
             res.end('Not Found');
         }
     } catch (error) {
         console.error('Error processing request:', error.message);
-        res.writeHead(500, {'Content-Type': 'text/plain'});
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
         res.end('Internal Server Error');
     }
 });

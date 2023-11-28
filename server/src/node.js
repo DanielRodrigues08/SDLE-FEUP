@@ -1,7 +1,7 @@
 import { AWSet } from "crdts";
-const ConsistentHashing = require("./ConsistentHashing");
-const express = require('express')
-const axios = require('axios')
+import { ConsistentHashing } from "./ConsistentHashing";
+import * as express from "express";
+import * as axios from "axios";
 
 class Node {
     constructor(hostname, port, allNodes, numInstances, gossipPeriod = 5000, protocol = "http") {
@@ -75,4 +75,4 @@ class Node {
     }
 }
 
-module.exports = Node;
+export { Node };
