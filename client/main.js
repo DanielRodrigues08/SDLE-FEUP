@@ -1,5 +1,5 @@
-import { pncounterTest } from "./pncounterTest.js";
-import { awsetTest, bawsetTest, rosetTest } from "./awsetTest.js";
+import { pncounterTest } from "./pncounter-editor.js";
+import { awsetTest, bawsetTest, rosetTest } from "./awset-editor.js";
 console.log("Hello Progressive Web Apps");
 
 const app = document.querySelector(".app");
