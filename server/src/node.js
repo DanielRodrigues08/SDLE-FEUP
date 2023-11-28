@@ -96,10 +96,15 @@ class Node {
         const filePath    = path.join(folderPath, `${requestId}.json`);
         const existingList  =  {};
 
-        if (fs.existsSync(filePath)) {
-            existingList = JSON.parse(fs.readFileSync(filePath).toString());
+        try {
+            if (fs.existsSync(filePath)) {
+                existingList = JSON.parse(fs.readFileSync(filePath).toString());
+            }
+            return existingList;
+        } catch (error) {
+            
+            return null;
         }
-        return existingList;
         
 
     }
@@ -113,31 +118,28 @@ class Node {
 
         try {
 
-            if (targetNodes[0] == this.address) {
-                this.store(req, res);
-                list = this.getList(requestBody)
-            }
-            else {
-                console.log(`Forwarding request to ${targetNode}`);
-                const response  = axios.post(`${targetNode}/store`, requestBody);
-                list = response.data
-            }
-
+            const lists = [];
 
             for (let i = 1; i < targetNodes.size(); i++) {
 
                 if (node == this.address) {
                     this.store(req, res);
-                    
+                    list = this.getList(requestBody)
+
                 } else {
                     console.log(`Forwarding request to ${node}`);
                     axios.post(`${node}/store`, requestBody);
+                    const response  = axios.post(`${targetNode}/store`, requestBody);
+                    list = response.data
                 }
+                if (list != null)
+                    lists.push(list);
                 
             }
+            
 
 
-            res.status(200).json({ message: `\n Posted to Server ${targetNode} and its neighbors!` });
+            res.status(200).json({ message: `\n Posted to Server ${targetNode} and its neighbors!`, data: lists[0]});
         }
         catch (error) {
             console.error("Error posting data:", error.message);
