@@ -9,8 +9,8 @@ directory_to_serve = "."
 port = 8080
 
 # Specify the SSL/TLS certificate and key files
-certfile = "cert.pem"
-keyfile = "key.pem"
+certfile = "certificate.crt"
+keyfile = "private-key.pem"
 
 # Create a custom handler to use the SSL context
 
