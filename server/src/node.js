@@ -80,6 +80,7 @@ class Node {
     
           fs.writeFileSync(filePath, listCRDT.toJSON());
           res.status(200).json({ message: `Data stored in ${filePath}` });
+          return listCRDT.toJSON();
 
         } catch (error) {
           console.error("Error storing data:", error.message);
@@ -123,8 +124,7 @@ class Node {
             for (let i = 1; i < targetNodes.size(); i++) {
 
                 if (node == this.address) {
-                    this.store(req, res);
-                    list = this.getList(requestBody)
+                    list = this.store(req, res);
 
                 } else {
                     console.log(`Forwarding request to ${node}`);
@@ -140,6 +140,7 @@ class Node {
 
 
             res.status(200).json({ message: `\n Posted to Server ${targetNode} and its neighbors!`, data: lists[0]});
+            res.end()
         }
         catch (error) {
             console.error("Error posting data:", error.message);
