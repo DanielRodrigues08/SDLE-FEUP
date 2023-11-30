@@ -26,8 +26,8 @@ class Node {
         this.server.get('/ring', this.getRing.bind(this))
         this.server.get('/ring/nodes', this.getNodesRing.bind(this))
         this.server.post('/ring/gossip', this.handleGossip.bind(this))
-
         this.server.post('/shutdown', this.shutdown.bind(this))
+
         this.server.post('/postList', this.postList.bind(this))
         this.server.post('/store', this.store.bind(this))
 
@@ -227,33 +227,6 @@ class Node {
         res.status(200).json({message: `\n Posted to Server and its neighbors!`, data: JSON.stringify(list[0])});
         res.end()
 
-    }
-
-    async startGossip() {
-        if (this.nodes.elements().length < 2) {
-            return
-        }
-
-        let randomNode;
-        do {
-            randomNode = this.nodes.elements()[Math.floor(Math.random() * this.nodes.elements().length)];
-        } while (randomNode === this.address)
-
-        try {
-            console.log(`Gossiping with ${randomNode}!`)
-            const response = await axios.post(`${randomNode}/gossip`, {
-                nodes: this.nodes.toJSON(),
-                from: this.address
-            })
-            this.nodes.merge(AWSet.fromJSON(response.data.nodes))
-            console.log(`Gossip with ${randomNode} successful!\n`)
-        } catch (e) {
-            console.log(`Failed to gossip with ${randomNode}!`)
-            console.log(e + "\n")
-            this.nodes.remove(randomNode)
-        }
-
-        this.consistentHashing.update(this.nodes.elements())
     }
 }
 
