@@ -23,15 +23,13 @@ class Node {
 
     run() {
 
+        this.server.get('/ring', this.getRing.bind(this))
         this.server.get('/ring/nodes', this.getNodesRing.bind(this))
         this.server.post('/ring/gossip', this.handleGossip.bind(this))
-        this.server.post('/shutdown', this.shutdown.bind(this))
 
-        this.server.post('/postList', this.postList.bind(this))
-        this.server.post('/gossip', this.handleGossip.bind(this))
-        this.server.post('/store', this.store.bind(this))
         this.server.post('/shutdown', this.shutdown.bind(this))
-        this.server.get('/ring', this.getRing.bind(this))
+        this.server.post('/postList', this.postList.bind(this))
+        this.server.post('/store', this.store.bind(this))
 
         this.server.listen(this.port, () => {
             console.log(`Node listening on port ${this.port}!`)
