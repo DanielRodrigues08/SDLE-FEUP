@@ -52,9 +52,9 @@ class ConsistentHashing {
 
         const uniqueNodesSet = new Set();
         const nodeArray = [];
-        
+
         for (const nodeHash of sortedKeys) {
-            if (hash <= nodeHash)  {
+            if (hash <= nodeHash) {
                 const node = this.nodes.get(nodeHash);
                 if (!uniqueNodesSet.has(node)) {
                     uniqueNodesSet.add(node);
@@ -63,9 +63,9 @@ class ConsistentHashing {
 
             }
         }
-        
+
         for (const nodeHash of sortedKeys) {
-            if (hash <= nodeHash)  {
+            if (hash <= nodeHash) {
                 break;
             }
             const node = this.nodes.get(nodeHash);
@@ -96,7 +96,7 @@ class ConsistentHashing {
     }
 
     getNodes() {
-        return this.nodes.values()
+        return [...new Set(this.nodes)];
     }
 }
 
