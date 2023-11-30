@@ -8,10 +8,10 @@ import path from "path";
 
 class Node {
     constructor(hostname, port, allNodes, numInstances, gossipPeriod = 5000, protocol = "http") {
-        this.host = hostname
-        this.port = port
-        this.neighboorhood = 3
-        this.address = `${protocol}://${hostname}:${port}`
+        this.host              = hostname
+        this.port              = port
+        this.neighboorhood     = 3
+        this.address           = `${protocol}://${hostname}:${port}`
         this.consistentHashing = new ConsistentHashing(allNodes, numInstances)
 
         this.nodes = new AWSet(this.address)
@@ -26,14 +26,18 @@ class Node {
 
     run() {
 
-        this.server.post('/processRequest', this.processRequest.bind(this))
+        this.server.post('/postList', this.postList.bind(this))
         this.server.post('/gossip', this.handleGossip.bind(this))
         this.server.get('/nodes', this.getNodes.bind(this))
+        this.server.post('/store', this.store.bind(this))
         this.server.post('/shutdown', this.shutdown.bind(this))
+        this.server.post('/addNode', this.addNode.bind(this))
+        this.server.post('/removeNode', this.removeNode.bind(this))
         this.server.get('/ring', this.getRing.bind(this))
 
         this.server.listen(this.port, () => {
             setInterval(this.startGossip.bind(this), this.gossipPeriod)
+            //setInterval(this.handoff.bind(this), 10000)
             console.log(`Node listening on port ${this.port}!`)
         })
     }
@@ -45,10 +49,30 @@ class Node {
             res.status(200).json({message: `Server ${this.host}:${this.port} closed gracefully.`});
             process.exit(0);
         });
+        res.end()
     }
 
     getRing(req, res) {
         res.status(200).json(this.consistentHashing.getFormattedRingJSON())
+        res.end()
+    }
+
+    addNode(req, res) {
+        const requestBody = req.body;
+        const node = requestBody.address;
+        this.nodes.add(node);
+        this.consistentHashing.update(this.nodes.elements())
+        res.status(200).json({message: `Node ${node} added to ring`});
+        res.end()
+    }
+
+    removeNode(req, res) {
+        const requestBody = req.body;
+        const node = requestBody.address;
+        this.nodes.remove(node);
+        this.consistentHashing.update(this.nodes.elements())
+        res.status(200).json({message: `Node ${node} removed from ring`});
+        res.end()
     }
 
     handleGossip(req, res) {
@@ -56,70 +80,88 @@ class Node {
         console.log(`Received gossip from ${req.body.from}!\n`)
         res.status(200).json({nodes: this.nodes.toJSON()});
         this.consistentHashing.update(this.nodes.elements())
+        res.end()
     }
 
-    store(req, res) {
+
+    async handoff() {
+
+        const sanitizedAddress = this.address.replace(/[:/]/g, '_'); // Replace colons and slashes with underscores
+        const folderPath = path.join("data", sanitizedAddress, "handoff");
+        
+        if (!fs.existsSync(folderPath)) {
+            fs.mkdirSync(folderPath, { recursive: true }); // Use recursive option to create parent directories if they don't exist
+        }
+        
+        const files = fs.readdirSync(folderPath);
+
+        for (const file of files) {
+
+            const filePath = path.join(folderPath, file);
+            const fileData = JSON.parse(fs.readFileSync(filePath).toString());
+            const requestId = fileData.id;
+            const targetNodes = this.consistentHashing.getNode(requestId, this.neighboorhood);
+
+            if (!targetNodes.includes(this.address)) {
+                continue;
+            }
+
+
+            for (const node of targetNodes) {
+
+                if (node == this.address) {
+                    continue;
+                }
+
+                console.log(`Forwarding request to ${node}`);
+                await axios.post(`${node}/store`, JSON.stringify(fileData));
+            }
+
+            fs.unlinkSync(filePath);
+        }
+
+    }
+
+
+    store(req) {
 
         const requestBody = req.body;
         const requestId = requestBody.id;
         const targetNodes = this.consistentHashing.getNode(requestId, this.neighboorhood);
 
+
+        const sanitizedAddress = this.address.replace(/[:/]/g, '_'); // Replace colons and slashes with underscores
+        const folderPath       = path.join("data", sanitizedAddress, "handoff");
+        const filePath         = path.join(folderPath, `${requestId}.json`);
+        
+        if (!fs.existsSync(folderPath)) {
+            fs.mkdirSync(folderPath, { recursive: true }); // Use recursive option to create parent directories if they don't exist
+        }
+
         if (!targetNodes.includes(this.address)) {
-            res.status(400).json({error: `Request ID ${requestId} does not belong to this node.`});
-            return;
+            folderPath = path.join(folderPath, "handoff");            
         }
 
         try {
+        
+            //if (fs.existsSync(filePath)) {
+                //existingList = JSON.parse(fs.readFileSync(filePath).toString());
+            //}
 
-            const folderPath = path.join(__dirname, this.address);
-            const filePath = path.join(folderPath, `${requestId}.json`);
-            const requestId = req.body.id;
-            const requestBody = req.body;
-            let existingList = {};
+            // let listCRDT = AWSet.fromJSON(existingList);
+            // let postCRDT = AWSet.fromJSON(requestBody);
+            // listCRDT.merge(postCRDT);
 
-            if (!fs.existsSync(folderPath)) {
-                fs.mkdirSync(folderPath);
-            }
-            if (fs.existsSync(filePath)) {
-                existingList = JSON.parse(fs.readFileSync(filePath).toString());
-            }
-
-            let listCRDT = AWSet.fromJSON(existingList);
-            let postCRDT = AWSet.fromJSON(requestBody);
-            listCRDT.merge(postCRDT);
-
-            fs.writeFileSync(filePath, listCRDT.toJSON());
-            res.status(200).json({message: `Data stored in ${filePath}`});
-            return listCRDT.toJSON();
+            fs.writeFileSync(filePath, JSON.stringify(requestBody));
+            return requestBody;
 
 
         } catch (error) {
             console.error("Error storing data:", error.message);
-            res.status(500).json({error: "Internal Server Error"});
         }
 
     }
 
-    getList(requestBody) {
-
-        const requestId = requestBody.id;
-
-        const folderPath = path.join(__dirname, this.address);
-        const filePath = path.join(folderPath, `${requestId}.json`);
-        let existingList = {};
-
-        try {
-            if (fs.existsSync(filePath)) {
-                existingList = JSON.parse(fs.readFileSync(filePath).toString());
-            }
-            return existingList;
-        } catch (error) {
-
-            return null;
-        }
-
-
-    }
 
     postList(req, res) {
 
@@ -127,21 +169,21 @@ class Node {
         const requestId = requestBody.id;
         const targetNodes = this.consistentHashing.getNode(requestId, this.neighboorhood);
         let list = {};
-
+    
         try {
 
             const lists = [];
+            console.log(this.address)
+            console.log(targetNodes)
 
-            for (let i = 1; i < targetNodes.size(); i++) {
-
+            for (const node of targetNodes) {
+                
                 if (node == this.address) {
-                    list = this.store(req, res);
+                    list = this.store(req);
 
                 } else {
                     console.log(`Forwarding request to ${node}`);
-                    axios.post(`${node}/store`, requestBody);
-                    const response = axios.post(`${targetNode}/store`, requestBody);
-                    list = response.data
+                    list = axios.post(`${node}/store`, requestBody);
                 }
                 if (list != null)
                     lists.push(list);
@@ -149,17 +191,20 @@ class Node {
             }
 
 
-            res.status(200).json({ message: `\n Posted to Server ${targetNode} and its neighbors!`, data: lists[0]});
-            res.end()
+            res.status(200).json({ message: `\n Posted to Server and its neighbors!`, data: JSON.stringify(lists[0])});
         }
         catch (error) {
             console.error("Error posting data:", error.message);
             res.status(500).json({error: "Internal Server Error"});
         }
+        finally {
+            res.end()
+        }
     }
 
     getNodes(req, res) {
         res.json({nodes: JSON.stringify(this.nodes.elements())})
+        res.end()
     }
 
     async startGossip() {
@@ -185,7 +230,6 @@ class Node {
             console.log(e + "\n")
             this.nodes.remove(randomNode)
         }
-        this.consistentHashing.update(this.nodes.elements())
     }
 }
 

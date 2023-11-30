@@ -47,7 +47,7 @@ class ConsistentHashing {
         removedNodes.forEach(node => this.removeNode(node));
     }
 
-    getNode(key) {
+    getNode(key, count = 3) {
         if (this.nodes.size === 0) {
             return null;
         }
