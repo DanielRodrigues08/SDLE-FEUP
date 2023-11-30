@@ -37,7 +37,7 @@ class Node {
 
         this.server.listen(this.port, () => {
             setInterval(this.startGossip.bind(this), this.gossipPeriod)
-            //setInterval(this.handoff.bind(this), 10000)
+            setInterval(this.handoff.bind(this), 10000)
             console.log(`Node listening on port ${this.port}!`)
         })
     }
@@ -86,11 +86,13 @@ class Node {
 
     async handoff() {
 
+        console.log("HAND OFF")
+
         const sanitizedAddress = this.address.replace(/[:/]/g, '_'); // Replace colons and slashes with underscores
         const folderPath = path.join("data", sanitizedAddress, "handoff");
         
         if (!fs.existsSync(folderPath)) {
-            fs.mkdirSync(folderPath, { recursive: true }); // Use recursive option to create parent directories if they don't exist
+            fs.mkdirSync(folderPath, { recursive: true }); 
         }
         
         const files = fs.readdirSync(folderPath);
@@ -114,7 +116,7 @@ class Node {
                 }
 
                 console.log(`Forwarding request to ${node}`);
-                await axios.post(`${node}/store`, JSON.stringify(fileData));
+                await axios.post(`${node}/store`, fileData);
             }
 
             fs.unlinkSync(filePath);
@@ -131,7 +133,7 @@ class Node {
 
 
         const sanitizedAddress = this.address.replace(/[:/]/g, '_'); // Replace colons and slashes with underscores
-        const folderPath       = path.join("data", sanitizedAddress, "handoff");
+        let folderPath       = path.join("data", sanitizedAddress, "handoff");
         const filePath         = path.join(folderPath, `${requestId}.json`);
         
         if (!fs.existsSync(folderPath)) {
