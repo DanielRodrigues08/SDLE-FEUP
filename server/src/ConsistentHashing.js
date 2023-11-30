@@ -37,17 +37,11 @@ class ConsistentHashing {
 
         const newNodes = incomingNodes.filter(node => !existingNodes.has(node));
         const removedNodes = Array.from(existingNodes).filter(node => !incomingNodes.includes(node));
-
-        /*console.log("Removing nodes:")
-        console.log(removedNodes);
-        console.log("Adding nodes:")
-        console.log(newNodes);*/
-
         newNodes.forEach(node => this.addNode(node));
         removedNodes.forEach(node => this.removeNode(node));
     }
 
-    getNode(key, count = 3) {
+    getNode(key) {
         if (this.nodes.size === 0) {
             return null;
         }
@@ -61,29 +55,23 @@ class ConsistentHashing {
         
         for (const nodeHash of sortedKeys) {
             if (hash <= nodeHash)  {
-
                 const node = this.nodes.get(nodeHash);
                 if (!uniqueNodesSet.has(node)) {
                     uniqueNodesSet.add(node);
                     nodeArray.push(node);
-
-                    if (uniqueNodesSet.size >= count)
-                        break;
                 }
 
             }
         }
-
-        while (uniqueNodesSet.size < count) {
-            for (let i = 0; i < sortedKeys.length; i++) {
-                const node = this.nodes.get(sortedKeys[i]);
-                if (!uniqueNodesSet.has(node)) {
-                    uniqueNodesSet.add(node);
-                    nodeArray.push(node);
-
-                    if (uniqueNodesSet.size >= count)
-                        return nodeArray;
-                }
+        
+        for (const nodeHash of sortedKeys) {
+            if (hash <= nodeHash)  {
+                break;
+            }
+            const node = this.nodes.get(nodeHash);
+            if (!uniqueNodesSet.has(node)) {
+                uniqueNodesSet.add(node);
+                nodeArray.push(node);
             }
         }
 

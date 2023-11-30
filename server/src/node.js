@@ -92,22 +92,18 @@ class Node {
         const folderPath = path.join("data", sanitizedAddress, "handoff");
         
         if (!fs.existsSync(folderPath)) {
-            fs.mkdirSync(folderPath, { recursive: true }); 
+            return
         }
         
         const files = fs.readdirSync(folderPath);
 
         for (const file of files) {
-
+            
+            let canDelete = true;
             const filePath = path.join(folderPath, file);
             const fileData = JSON.parse(fs.readFileSync(filePath).toString());
             const requestId = fileData.id;
-            const targetNodes = this.consistentHashing.getNode(requestId, this.neighboorhood);
-
-            if (!targetNodes.includes(this.address)) {
-                continue;
-            }
-
+            const targetNodes = this.consistentHashing.getNode(requestId).splice(this.neighboorhood);
 
             for (const node of targetNodes) {
 
@@ -116,10 +112,15 @@ class Node {
                 }
 
                 console.log(`Forwarding request to ${node}`);
-                await axios.post(`${node}/store`, fileData);
+                const response = await axios.post(`${node}/store`, fileData)
+                if (response.status != 200) {
+                    canDelete = false;
+                }
             }
 
-            fs.unlinkSync(filePath);
+            if (canDelete) {
+                fs.unlinkSync(filePath);
+            }
         }
 
     }
@@ -129,22 +130,20 @@ class Node {
 
         const requestBody = req.body;
         const requestId = requestBody.id;
-        const targetNodes = this.consistentHashing.getNode(requestId, this.neighboorhood);
+        const targetNodes = this.consistentHashing.getNode(requestId).splice(this.neighboorhood);
 
 
         const sanitizedAddress = this.address.replace(/[:/]/g, '_'); // Replace colons and slashes with underscores
-        let folderPath       = path.join("data", sanitizedAddress, "handoff");
-        const filePath         = path.join(folderPath, `${requestId}.json`);
+        let folderPath       = path.join("data", sanitizedAddress);
+
+        if (!targetNodes.includes(this.address)) {
+            folderPath = path.join(folderPath, "handoff");            
+        }
         
         if (!fs.existsSync(folderPath)) {
             fs.mkdirSync(folderPath, { recursive: true }); // Use recursive option to create parent directories if they don't exist
         }
 
-        if (!targetNodes.includes(this.address)) {
-            folderPath = path.join(folderPath, "handoff");            
-        }
-
-        try {
         
             //if (fs.existsSync(filePath)) {
                 //existingList = JSON.parse(fs.readFileSync(filePath).toString());
@@ -154,54 +153,43 @@ class Node {
             // let postCRDT = AWSet.fromJSON(requestBody);
             // listCRDT.merge(postCRDT);
 
-            fs.writeFileSync(filePath, JSON.stringify(requestBody));
-            return requestBody;
-
-
-        } catch (error) {
-            console.error("Error storing data:", error.message);
-        }
+        const filePath         = path.join(folderPath, `${requestId}.json`);
+        fs.writeFileSync(filePath, JSON.stringify(requestBody));
+        return requestBody;
 
     }
 
 
     postList(req, res) {
 
-        const requestBody = req.body;
-        const requestId = requestBody.id;
-        const targetNodes = this.consistentHashing.getNode(requestId, this.neighboorhood);
+        const requestBody    = req.body;
+        const requestId      = requestBody.id;
+        const preferenceList = this.consistentHashing.getNode(requestId, this.neighboorhood);
         let list = {};
     
-        try {
-
-            const lists = [];
-            console.log(this.address)
-            console.log(targetNodes)
-
-            for (const node of targetNodes) {
-                
+        let i = 0
+        while(i < this.neighboorhood && i < preferenceList.length) {
+            let node = preferenceList[i];
+            try {
                 if (node == this.address) {
-                    list = this.store(req);
+                        list = this.store(req);
 
                 } else {
                     console.log(`Forwarding request to ${node}`);
                     list = axios.post(`${node}/store`, requestBody);
                 }
                 if (list != null)
-                    lists.push(list);
-
-            }
-
-
-            res.status(200).json({ message: `\n Posted to Server and its neighbors!`, data: JSON.stringify(lists[0])});
+                    lists.push(list);     
+                i += 1;
+                }                    
+            catch (error) {
+                    i += 1
+                }       
         }
-        catch (error) {
-            console.error("Error posting data:", error.message);
-            res.status(500).json({error: "Internal Server Error"});
-        }
-        finally {
-            res.end()
-        }
+
+        res.status(200).json({ message: `\n Posted to Server and its neighbors!`, data: JSON.stringify(list[0])});
+        res.end()
+
     }
 
     getNodes(req, res) {
@@ -232,6 +220,8 @@ class Node {
             console.log(e + "\n")
             this.nodes.remove(randomNode)
         }
+
+        this.consistentHashing.update(this.nodes.elements())
     }
 }
 

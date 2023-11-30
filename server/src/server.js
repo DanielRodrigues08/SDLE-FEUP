@@ -43,15 +43,12 @@ class Server {
     async addNode(req, res) {
         const requestBody = req.body;
         const nodeHost = requestBody.host;
-        const nodePort = requestBody.port;
+        const nodePort  = requestBody.port;
         const node      = `${this.protocol}://${nodeHost}:${nodePort}`
         this.nodes.add(node);
         
         new Node(nodeHost, nodePort, this.nodes, 3).run();
 
-        for (const node of this.nodes) {
-            await axios.post(`${node}/addNode`, {address: node});
-        } 
         res.status(200).json({message: `Node ${node} added.`});
         res.end()
     }
@@ -64,7 +61,6 @@ class Server {
         for (const node of allNodes) {
             await axios.post(`${node}/removeNode`, {address: node});
         }
-
 
         res.status(200).json({message: `Node ${node} removed.`});
         res.end()
