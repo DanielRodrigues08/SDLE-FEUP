@@ -35,9 +35,8 @@ class Server {
         this.server.listen().close(() => {
             console.log(`Server ${this.host}:${this.port} closed gracefully.`);
             res.status(200).json({message: `Server ${this.host}:${this.port} closed gracefully.`});
-            process.exit(0);
+            res.end();
         });
-        res.end()
     }
 
     async addNode(req, res) {

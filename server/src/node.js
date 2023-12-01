@@ -26,7 +26,7 @@ class Node {
         this.server.get('/ring', this.getRing.bind(this))
         this.server.get('/ring/nodes', this.getNodesRing.bind(this))
         this.server.post('/ring/gossip', this.handleGossip.bind(this))
-
+        this.server.post('/setNodes', this.setNodes.bind(this))
         this.server.post('/shutdown', this.shutdown.bind(this))
         this.server.post('/postList', this.postList.bind(this))
         this.server.post('/store', this.store.bind(this))
@@ -79,7 +79,7 @@ class Node {
         this.server.listen().close(() => {
             console.log(`Server ${this.host}:${this.port} closed gracefully.`);
             res.status(200).json({message: `Server ${this.host}:${this.port} closed gracefully.`});
-            process.exit(0);
+            res.end()
         });
     }
 
@@ -97,13 +97,12 @@ class Node {
     }
 
     _chooseRandomNodes(numNodes) {
-        const nodes = this.consistentHashing.getNodes();
-        nodes.remove(this.address)
+        let nodes = this.consistentHashing.getNodes();
 
-        if (numNodes < nodes.length) {
+        nodes = nodes.filter(element => element !== this.address);
+        if (numNodes > nodes.length) {
             return nodes
         }
-
         const randomNodes = [];
         let randomIndex;
 
@@ -141,7 +140,7 @@ class Node {
             const filePath = path.join(folderPath, file);
             const fileData = JSON.parse(fs.readFileSync(filePath).toString());
             const requestId = fileData.id;
-            const targetNodes = this.consistentHashing.getNode(requestId).splice(this.neighboorhood);
+            const targetNodes = this.consistentHashing.getNode(requestId).slice(0, this.neighboorhood);
 
             for (const node of targetNodes) {
 
@@ -168,7 +167,7 @@ class Node {
 
         const requestBody = req.body;
         const requestId = requestBody.id;
-        const targetNodes = this.consistentHashing.getNode(requestId).splice(this.neighboorhood);
+        const targetNodes = this.consistentHashing.getNode(requestId).slice(0, this.neighboorhood);
 
 
         const sanitizedAddress = this.address.replace(/[:/]/g, '_'); // Replace colons and slashes with underscores
@@ -181,15 +180,6 @@ class Node {
         if (!fs.existsSync(folderPath)) {
             fs.mkdirSync(folderPath, {recursive: true}); // Use recursive option to create parent directories if they don't exist
         }
-
-
-        //if (fs.existsSync(filePath)) {
-        //existingList = JSON.parse(fs.readFileSync(filePath).toString());
-        //}
-
-        // let listCRDT = AWSet.fromJSON(existingList);
-        // let postCRDT = AWSet.fromJSON(requestBody);
-        // listCRDT.merge(postCRDT);
 
         const filePath = path.join(folderPath, `${requestId}.json`);
         fs.writeFileSync(filePath, JSON.stringify(requestBody));
@@ -229,31 +219,9 @@ class Node {
 
     }
 
-    async startGossip() {
-        if (this.nodes.elements().length < 2) {
-            return
-        }
-
-        let randomNode;
-        do {
-            randomNode = this.nodes.elements()[Math.floor(Math.random() * this.nodes.elements().length)];
-        } while (randomNode === this.address)
-
-        try {
-            console.log(`Gossiping with ${randomNode}!`)
-            const response = await axios.post(`${randomNode}/gossip`, {
-                nodes: this.nodes.toJSON(),
-                from: this.address
-            })
-            this.nodes.merge(AWSet.fromJSON(response.data.nodes))
-            console.log(`Gossip with ${randomNode} successful!\n`)
-        } catch (e) {
-            console.log(`Failed to gossip with ${randomNode}!`)
-            console.log(e + "\n")
-            this.nodes.remove(randomNode)
-        }
-
-        this.consistentHashing.update(this.nodes.elements())
+    setNodes(req, res) {
+        const nodes = req.body.nodes
+        this.consistentHashing = new ConsistentHashing(nodes, 4)
     }
 }
 

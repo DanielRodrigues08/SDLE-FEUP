@@ -96,7 +96,12 @@ class ConsistentHashing {
     }
 
     getNodes() {
-        return [...new Set(this.nodes)];
+        //nodes will be a set
+        const nodes = new Set();
+        for (const node of this.nodes.values()) {
+            nodes.add(node);
+        }
+        return Array.from(nodes);
     }
 }
 
