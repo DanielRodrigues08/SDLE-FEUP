@@ -28,6 +28,7 @@ class Node {
         this.server.post('/ring/gossip', this.handleGossip.bind(this))
         this.server.post('/setNodes', this.setNodes.bind(this))
         this.server.post('/shutdown', this.shutdown.bind(this))
+
         this.server.post('/postList', this.postList.bind(this))
         this.server.post('/store', this.store.bind(this))
 
