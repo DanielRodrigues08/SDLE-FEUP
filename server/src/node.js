@@ -45,12 +45,12 @@ class Node {
         // TODO send the data to the nodes that are responsible for it
         let messageCounter = this.gossipCounter[req.body.idAction] ? this.gossipCounter[req.body.idAction] : 0;
 
-        // The message has already been gossiped N times so we can stop resending it
+        // The message has already been gossiped N times, so we can stop resending it
         if (messageCounter === this.degreeGossip) {
             res.end()
             return
         }
-        // The message has not been gossiped yet so we can process it
+        // The message has not been gossiped yet, so we can process it
         else if (messageCounter === 0) {
             switch (req.body.action) {
                 case "add":
@@ -179,7 +179,7 @@ class Node {
         }
 
         if (!fs.existsSync(folderPath)) {
-            fs.mkdirSync(folderPath, {recursive: true}); // Use recursive option to create parent directories if they don't exist
+            fs.mkdirSync(folderPath, {recursive: true}); // Use a recursive option to create parent directories if they don't exist
         }
 
         const filePath = path.join(folderPath, `${requestId}.json`);
@@ -194,13 +194,14 @@ class Node {
         const requestBody = req.body;
         const requestId = requestBody.id;
         const preferenceList = this.consistentHashing.getNode(requestId, this.neighboorhood);
+        let lists = [];
         let list = {};
 
         let i = 0
         while (i < this.neighboorhood && i < preferenceList.length) {
             let node = preferenceList[i];
             try {
-                if (node == this.address) {
+                if (node === this.address) {
                     list = this.store(req);
 
                 } else {
@@ -215,7 +216,7 @@ class Node {
             }
         }
 
-        res.status(200).json({message: `\n Posted to Server and its neighbors!`, data: JSON.stringify(list[0])});
+        res.status(200).json({message: `\n Posted to Server and its neighbors!`, data: JSON.stringify(lists[0])});
         res.end()
 
     }
