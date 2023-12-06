@@ -9,13 +9,14 @@ import crypto from "crypto";
 
 class Node {
     constructor(hostname, port, allNodes, numInstances, protocol = "http", degreeGossip = 3) {
-        this.host = hostname
-        this.port = port
-        this.neighboorhood = 3
-        this.address = `${protocol}://${hostname}:${port}`
+        
+        this.host              = hostname
+        this.port              = port
+        this.neighboorhood     = 3
+        this.address           = `${protocol}://${hostname}:${port}`
         this.consistentHashing = new ConsistentHashing(allNodes, numInstances)
-        this.degreeGossip = degreeGossip
-        this.gossipCounter = []
+        this.degreeGossip      = degreeGossip
+        this.gossipCounter     = []
 
         this.server = express()
         this.server.use(express.json())
@@ -33,6 +34,7 @@ class Node {
         this.server.post('/store', this.store.bind(this))
 
         this.server.listen(this.port, () => {
+            setInterval(this.handoff.bind(this), 10000);
             console.log(`Node listening on port ${this.port}!`)
         })
     }
@@ -42,7 +44,7 @@ class Node {
     }
 
     handleGossip(req, res) {
-        // TODO send the data to the nodes that are responsible for it
+
         let messageCounter = this.gossipCounter[req.body.idAction] ? this.gossipCounter[req.body.idAction] : 0;
 
         // The message has already been gossiped N times, so we can stop resending it
@@ -137,10 +139,10 @@ class Node {
 
         for (const file of files) {
 
-            let canDelete = true;
-            const filePath = path.join(folderPath, file);
-            const fileData = JSON.parse(fs.readFileSync(filePath).toString());
-            const requestId = fileData.id;
+            let canDelete     = true;
+            const filePath    = path.join(folderPath, file);
+            const fileData    = JSON.parse(fs.readFileSync(filePath).toString());
+            const requestId   = fileData.id;
             const targetNodes = this.consistentHashing.getNode(requestId).slice(0, this.neighboorhood);
 
             for (const node of targetNodes) {
@@ -191,14 +193,16 @@ class Node {
 
     postList(req, res) {
 
-        const requestBody = req.body;
-        const requestId = requestBody.id;
+        const requestBody    = req.body;
+        const requestId      = requestBody.id;
         const preferenceList = this.consistentHashing.getNode(requestId, this.neighboorhood);
-        let lists = [];
-        let list = {};
+        let lists            = [];
+        let list             = {};
 
         let i                = 0
         let chosenNeighboors = []
+
+        
 
         while (i < preferenceList.length) {
             let node = preferenceList[i];
