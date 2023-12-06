@@ -73,8 +73,9 @@ class Node {
         this._sendGossip(req.body.node, req.body.action, req.body.idAction)
     }
 
-    shutdown(req, res) {
+    shutdown(res) {
         console.log('Initiating graceful shutdown...');
+
         // TODO: Send the data to the nodes that are responsible for it
 
         this._sendGossip(this.address, "remove", crypto.randomBytes(20).toString("hex"))

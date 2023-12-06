@@ -57,10 +57,8 @@ class Server {
         const node = requestBody.address;
         axios.post(`${node}/shutdown`);
         this.nodes.remove(node);
-        for (const node of allNodes) {
-            await axios.post(`${node}/removeNode`, {address: node});
-        }
 
+        
         res.status(200).json({message: `Node ${node} removed.`});
         res.end()
 
