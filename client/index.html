@@ -23,29 +23,84 @@
     <button id="syncButton" class="btn btn-primary">Sync</button>
 </div>
 
-<div class="card" style="width: 18rem;">
-    <div class="card-header">
-        Shopping List - ID
-    </div>
-    <div class="card-body">
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item">
-                <div>
-                    <strong>Name:</strong> Item 1
-                    <br>
-                    <strong>Quantity:</strong>
-                    <span id="quantityValue">5</span>
-                    <button class="btn btn-sm btn-primary ml-2" onclick="changeQuantity(-1)">-</button>
-                    <button class="btn btn-sm btn-primary" onclick="changeQuantity(1)">+</button>
-                    <br>
-                    <button class="btn btn-sm btn-danger ml-2" onclick="removeItem()">Remove</button>
-                </div>
-            </li>
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    <div class="col">
+        <div class="card" style="width: 20rem;">
+            <div class="card-header">
+                Shopping List - ID
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <div>
+                            <strong>Name:</strong> Item 1
+                            <br>
+                            <strong>Quantity:</strong>
+                            <span id="quantityValue">5</span>
+                            <button class="btn btn-sm btn-primary ml-2" onclick="changeQuantity(-1)">-</button>
+                            <button class="btn btn-sm btn-primary" onclick="changeQuantity(1)">+</button>
+                            <br>
+                            <button class="btn btn-sm btn-danger ml-2" onclick="removeItem()">Remove</button>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div>
+                            <strong>Name:</strong> Item 2
+                            <br>
+                            <strong>Quantity:</strong>
+                            <span id="quantityValue">5</span>
+                            <button class="btn btn-sm btn-primary ml-2" onclick="changeQuantity(-1)">-</button>
+                            <button class="btn btn-sm btn-primary" onclick="changeQuantity(1)">+</button>
+                            <br>
+                            <button class="btn btn-sm btn-danger ml-2" onclick="removeItem()">Remove</button>
+                        </div>
+                    </li>
 
-        </ul>
+                </ul>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-danger">Delete List</button>
+            </div>
+        </div>
     </div>
-    <div class="card-footer">
-        <button class="btn btn-danger">Delete List</button>
+    <div class="col">
+        <div class="card" style="width: 20rem;">
+            <div class="card-header">
+                Shopping List - ID
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <div>
+                            <strong>Name:</strong> Item 1
+                            <br>
+                            <strong>Quantity:</strong>
+                            <span id="quantityValue">5</span>
+                            <button class="btn btn-sm btn-primary ml-2" onclick="changeQuantity(-1)">-</button>
+                            <button class="btn btn-sm btn-primary" onclick="changeQuantity(1)">+</button>
+                            <br>
+                            <button class="btn btn-sm btn-danger ml-2" onclick="removeItem()">Remove</button>
+                        </div>
+                    </li>
+                    <li class="list-group-item">
+                        <div>
+                            <strong>Name:</strong> Item 2
+                            <br>
+                            <strong>Quantity:</strong>
+                            <span id="quantityValue">5</span>
+                            <button class="btn btn-sm btn-primary ml-2" onclick="changeQuantity(-1)">-</button>
+                            <button class="btn btn-sm btn-primary" onclick="changeQuantity(1)">+</button>
+                            <br>
+                            <button class="btn btn-sm btn-danger ml-2" onclick="removeItem()">Remove</button>
+                        </div>
+                    </li>
+
+                </ul>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-danger">Delete List</button>
+            </div>
+        </div>
     </div>
 </div>
 </body>
