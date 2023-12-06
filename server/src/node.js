@@ -164,7 +164,7 @@ class Node {
     }
 
 
-    store(req) {
+    store(req, handoff = false) {
 
         const requestBody = req.body;
         const requestId = requestBody.id;
@@ -174,7 +174,7 @@ class Node {
         const sanitizedAddress = this.address.replace(/[:/]/g, '_'); // Replace colons and slashes with underscores
         let folderPath = path.join("data", sanitizedAddress);
 
-        if (!targetNodes.includes(this.address)) {
+        if (!targetNodes.includes(this.address) || handoff) {
             folderPath = path.join(folderPath, "handoff");
         }
 
@@ -197,8 +197,10 @@ class Node {
         let lists = [];
         let list = {};
 
-        let i = 0
-        while (i < this.neighboorhood && i < preferenceList.length) {
+        let i                = 0
+        let chosenNeighboors = []
+
+        while (i < preferenceList.length) {
             let node = preferenceList[i];
             try {
                 if (node === this.address) {
@@ -210,9 +212,22 @@ class Node {
                 }
                 if (list != null)
                     lists.push(list);
-                i += 1;
+
+                counter.push(node);
+                if (chosenNeighboors.length === this.neighboorhood) {
+                    break;
+                }
             } catch (error) {
-                i += 1
+                console.log(`Error: ${error.message}`);
+            }
+            finally {
+                i++;
+            }
+        }
+
+        if (chosenNeighboors.length < this.neighboorhood) {
+            for (const neighbor of chosenNeighboors) {
+                axios.post(`${neighbor}/store`, requestBody, { params: { handoff: true } });
             }
         }
 
