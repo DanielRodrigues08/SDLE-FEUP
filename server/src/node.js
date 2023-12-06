@@ -76,8 +76,8 @@ class Node {
     shutdown(res) {
         console.log('Initiating graceful shutdown...');
 
-        // TODO: Send the data to the nodes that are responsible for it
-
+        this.moveToHandOff();
+        this.handoff();
         this._sendGossip(this.address, "remove", crypto.randomBytes(20).toString("hex"))
 
         this.server.listen().close(() => {
@@ -91,7 +91,7 @@ class Node {
         let nodesToGossip = this._chooseRandomNodes(this.degreeGossip);
 
         for (const nodeToGossip of nodesToGossip) {
-            // TODO: Check if the node is alive. If not choose another one
+
             axios.post(`${nodeToGossip}/ring/gossip`, {
                 node: targetNode,
                 action: action,
@@ -124,10 +124,33 @@ class Node {
         res.end()
     }
 
+    moveToHandOff() {
+
+        // This method takes all files stored in the nodes folder and moves them to their handoff folder
+
+        const sanitizedAddress = this.address.replace(/[:/]/g, '_'); // Replace colons and slashes with underscores
+        const folderPath = path.join("data", sanitizedAddress);
+        if (!fs.existsSync(folderPath)) {
+            return
+        }
+        const files = fs.readdirSync(folderPath);
+        const handoffFolderPath = path.join(folderPath, "handoff");
+
+        if (!fs.existsSync(handoffFolderPath)) {
+            fs.mkdirSync(handoffFolderPath, {recursive: true}); // Use a recursive option to create parent directories if they don't exist
+        }
+
+        for (const file of files) {
+            const filePath = path.join(folderPath, file);
+            const handoffFilePath = path.join(handoffFolderPath, file);
+            fs.renameSync(filePath, handoffFilePath);
+        }
+
+
+    }
+
 
     async handoff() {
-
-        console.log("HAND OFF")
 
         const sanitizedAddress = this.address.replace(/[:/]/g, '_'); // Replace colons and slashes with underscores
         const folderPath = path.join("data", sanitizedAddress, "handoff");
