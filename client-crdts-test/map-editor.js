@@ -111,14 +111,20 @@ function mapItem(key, value) {
     let valueComponent;
     debugger;
     if (value instanceof BAWMap) {
-        valueComponent = mapEditor(value).editor;
+        const editor = mapEditor(value);
+        valueComponent = editor.editor;
+        editor.update()
     }
 
     else if (value instanceof AWSet) {
-        valueComponent = awsetEdit(value).editor;
+        const editor = awsetEdit(value);
+        valueComponent = editor.editor;
+        editor.update()
 
     } else if (value instanceof PNCounter) {
-        valueComponent = counterEdit(value).editor;
+        const editor = counterEdit(value);
+        valueComponent = editor.editor;
+        editor.update();
 
     } else {
         const valueType = value.constructor ? value.constructor.name : typeof value;
