@@ -2,6 +2,7 @@ import http.server
 import socketserver
 import ssl
 
+print("Yass")
 # Set the path to the directory you want to serve
 directory_to_serve = "."
 
