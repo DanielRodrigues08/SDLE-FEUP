@@ -1,15 +1,7 @@
 import { AWSet, BAWSet, ROSet } from "crdts";
 import { createTester } from "./editor.js";
 
-const editorContainer = document.createElement("div");
-editorContainer.className = "editorContainer";
-function awsetEdit(awset, n, name) {
-    const editor = document.createElement("div");
-    editor.className = "editor";
-
-    const header = document.createElement("span")
-    header.innerText = `${name} ${n}`;
-    header.style.textAlign = "center";
+export function awsetEdit(awset) {
 
     const contents = document.createElement("div");
     contents.className = "contents";
@@ -76,9 +68,21 @@ function awsetEdit(awset, n, name) {
 
     contents.appendChild(list);
     contents.appendChild(addElementContainer);
+    return { editor: contents, update: setElements, crdt: awset };
+}
+function awsetNamedEdit(awset, n, name) {
+    const editor = document.createElement("div");
+    editor.className = "editor";
+
+    const header = document.createElement("span")
+    header.innerText = `${name} ${n}`;
+    header.style.textAlign = "center";
+
     editor.appendChild(header);
-    editor.appendChild(contents);
-    return { editor: editor, update: setElements, crdt: awset };
+    const e = awsetEdit(awset);
+    editor.appendChild(e.editor);
+    return { ...e, editor: editor }
+
 }
 
 // Higher order functions
@@ -86,7 +90,7 @@ export const generalAwsetTestCreator = (awsetConstructor, syncerName, setName) =
     const editors = [];
     for (let i = 0; i < n; i++) {
         const awset = awsetConstructor(i);
-        editors.push(awsetEdit(awset, i, setName));
+        editors.push(awsetNamedEdit(awset, i, setName));
     }
     return createTester(editors, syncerName);
 }

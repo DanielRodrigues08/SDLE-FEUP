@@ -2,6 +2,7 @@ import { BAWMap } from "crdts";
 import { PNCounter } from "crdts";
 import { AWSet } from "crdts";
 import { createTester } from "./editor.js";
+import { awsetEdit } from "./awset-editor.js"
 
 const span = (text) => {
     const s = document.createElement("span");
@@ -97,11 +98,11 @@ function mapItem(key, value) {
 
     let valueComponent;
     if (value instanceof BAWMap) {
-        valueComponent = span("Building a BawMap item");
+        valueComponent = mapEditor(value);
     }
 
     else if (value instanceof AWSet) {
-        valueComponent = span("building a awset item")
+        valueComponent = awsetEdit(value).editor;
 
     } else if (value instanceof PNCounter) {
         valueComponent = span("building a pncounter item")

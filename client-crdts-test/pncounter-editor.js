@@ -1,7 +1,7 @@
 import { PNCounter } from "crdts";
 import { createTester } from "./editor.js";
 
-function counterEdit(counter) {
+export function counterEdit(counter) {
     const edit = document.createElement("div");
     edit.className = "editor";
 
