@@ -108,8 +108,9 @@ function mapItem(key, value) {
     const item = document.createElement("div");
     item.className = "mapItem";
 
+
+    const valueType = value.constructor ? value.constructor.name : typeof value;
     let valueComponent;
-    debugger;
     if (value instanceof BAWMap) {
         const editor = mapEditor(value);
         valueComponent = editor.editor;
@@ -127,16 +128,24 @@ function mapItem(key, value) {
         editor.update();
 
     } else {
-        const valueType = value.constructor ? value.constructor.name : typeof value;
         valueComponent = span(`${valueType} cannot be a value of a CRDT Map`);
     }
+    const valueTypeComponent = span(valueType);
+    valueTypeComponent.style.fontStyle = "italic";
+
+    const toggable = [valueComponent, valueTypeComponent];
+    let fold = false;
+
     const keySpan = span(key + ": ")
-    keySpan.addEventListener("click", (e) => {
-        e.stopPropagation();
-        console.log(`Folding Item of key ${key}`)
-    });
     item.appendChild(keySpan);
+
     item.appendChild(valueComponent);
+    item.addEventListener("click", (e) => {
+        e.stopPropagation();
+        console.log("Folding");
+        item.replaceChild(toggable[!fold & 1], toggable[(fold) & 1]);
+        fold = !fold;
+    })
     return item;
 }
 
