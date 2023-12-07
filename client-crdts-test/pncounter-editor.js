@@ -2,12 +2,6 @@ import { PNCounter } from "crdts";
 import { createTester } from "./editor.js";
 
 export function counterEdit(counter) {
-    const edit = document.createElement("div");
-    edit.className = "editor";
-
-    const header = document.createElement("span")
-    header.innerText = `Counter ${counter.tag}`;
-    header.style.textAlign = "center";
 
     const inc = document.createElement("button");
     inc.innerText = "+";
@@ -24,8 +18,6 @@ export function counterEdit(counter) {
     }
     setVal();
 
-    edit.appendChild(header);
-    edit.appendChild(controls);
 
     controls.appendChild(inc);
     controls.appendChild(val);
@@ -41,14 +33,29 @@ export function counterEdit(counter) {
         setVal();
         e.stopPropagation();
     })
-    return { editor: edit, update: setVal, crdt: counter };
+    return { editor: controls, update: setVal, crdt: counter };
+}
+
+function counterNamedEdit(counter) {
+    const edit = document.createElement("div");
+    edit.className = "editor";
+
+    const header = document.createElement("span")
+    header.innerText = `Counter ${counter.tag}`;
+    header.style.textAlign = "center";
+
+    const elements = counterEdit(counter);
+    edit.appendChild(header);
+    edit.appendChild(elements.editor);
+
+    return { ...elements, editor: edit }
 }
 
 export const pncounterTest = (tags) => {
     const editors = [];
     for (const tag of tags) {
         const counter = new PNCounter(tag);
-        const obj = counterEdit(counter);
+        const obj = counterNamedEdit(counter);
         editors.push(obj);
     }
 

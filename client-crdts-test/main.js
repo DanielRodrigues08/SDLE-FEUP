@@ -9,7 +9,7 @@ const testCounter = pncounterTest(["a", "c", "d", "e"]);
 const testBAWSet = bawsetTest(4);
 const testAWSet = awsetTest(5);
 const testROSet = rosetTest(4);
-const testAWMAP = awmapTest(1);
+const testAWMAP = awmapTest(2);
 app.appendChild(testCounter);
 app.appendChild(testBAWSet);
 app.appendChild(testAWSet);

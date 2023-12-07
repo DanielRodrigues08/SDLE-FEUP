@@ -3,6 +3,7 @@ import { PNCounter } from "crdts";
 import { AWSet } from "crdts";
 import { createTester } from "./editor.js";
 import { awsetEdit } from "./awset-editor.js"
+import { counterEdit } from "./pncounter-editor.js";
 
 const span = (text) => {
     const s = document.createElement("span");
@@ -12,7 +13,7 @@ const span = (text) => {
 
 function mapEditor(map) {
     const editor = document.createElement("div");
-    editor.className = "editor";
+    editor.className = "mapEditor";
 
     let elements = document.createElement("div");
     elements.className = "mapItems";
@@ -30,8 +31,10 @@ function mapEditor(map) {
 
     const addKeyComponent = document.createElement("input");
     addKeyComponent.type = "text";
+    addKeyComponent.addEventListener("click", e => e.stopPropagation());
 
     const addValueComponent = document.createElement("select");
+    addValueComponent.addEventListener("click", e => e.stopPropagation());
     const valueTypes = {
         "AddWins Set": () => new AWSet(),
         "Add Wins Map": () => new BAWMap(),
@@ -46,8 +49,7 @@ function mapEditor(map) {
 
     const addItemButton = document.createElement("button");
     addItemButton.textContent = "+";
-    addItemButton.addEventListener('click', (e) => {
-        e.stopPropagation();
+    const addItem = () => {
         const key = addKeyComponent.value
         addKeyComponent.value = "";
         if (key == "") {
@@ -57,6 +59,16 @@ function mapEditor(map) {
         console.log(`Adding ${key} a ${addValueComponent.value}`);
         map.set(key, crdt);
         setElements();
+    }
+    addItemButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        addItem();
+    })
+    addKeyComponent.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") {
+            addItem();
+            e.preventDefault();
+        }
     })
 
     const addKeyValue = document.createElement("div");
@@ -75,8 +87,8 @@ function mapEditor(map) {
     toggleAddItemButton.textContent = "+";
     toggleAddItemButton.addEventListener('click', (e) => {
         e.stopPropagation();
-        toggleAddItemButton.textContent = state.isAdding ? "-" : "+";
         state.isAdding = !state.isAdding;
+        toggleAddItemButton.textContent = state.isAdding ? "-" : "+";
         toggleAddKeyValue();
     })
 
@@ -89,7 +101,7 @@ function mapEditor(map) {
     editor.appendChild(elements);
     editor.appendChild(addContainer);
 
-    return editor;
+    return { crdt: map, editor: editor, updateGroup: null, update: setElements };
 }
 
 function mapItem(key, value) {
@@ -105,12 +117,11 @@ function mapItem(key, value) {
         valueComponent = awsetEdit(value).editor;
 
     } else if (value instanceof PNCounter) {
-        valueComponent = span("building a pncounter item")
+        valueComponent = counterEdit(value).editor;
 
     } else {
         const valueType = value.constructor ? value.constructor.name : typeof value;
         valueComponent = span(`${valueType} cannot be a value of a CRDT Map`);
-
     }
     const keySpan = span(key + ": ")
     keySpan.addEventListener("click", (e) => {
@@ -122,13 +133,26 @@ function mapItem(key, value) {
     return item;
 }
 
+export function mapNamedEditor(name) {
+    const crdt = new BAWMap(name);
+    const element = mapEditor(crdt);
+    const updateGroup = null;
+    const editor = document.createElement("div");
+    editor.className = "editor";
+
+    const header = document.createElement("span")
+    header.innerText = `Map ${name}`;
+    header.style.textAlign = "center";
+    editor.appendChild(header);
+    editor.appendChild(element.editor);
+    return { ...element, editor: editor };
+
+}
+
 export function awmapTest(n) {
     const editors = [];
     for (let i = 0; i < n; i++) {
-        const crdt = new BAWMap(i);
-        const element = mapEditor(crdt);
-        const updateGroup = null;
-        editors.push({ crdt: crdt, editor: element, updateGroup: updateGroup });
+        editors.push(mapNamedEditor(i));
     };
     return createTester(editors, "AWMap")
 }
