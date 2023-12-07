@@ -13,7 +13,7 @@ export function awsetEdit(awset) {
         let res = [];
         for (const el of awset.elements()) {
             const item = document.createElement("div");
-            const p = document.createElement("p");
+            const p = document.createElement("span");
             p.innerText = el;
             item.className = "listItem";
             const deleteItem = document.createElement("button");
