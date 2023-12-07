@@ -1,78 +1,273 @@
-import { AWSet } from "crdts";
-import { ConsistentHashing } from "./ConsistentHashing";
-import * as express from "express";
-import * as axios from "axios";
+import {AWSet} from "crdts";
+import {ConsistentHashing} from "./ConsistentHashing.js";
+
+import express from "express";
+import axios from "axios";
+import fs from "fs";
+import path from "path";
+import crypto from "crypto";
 
 class Node {
-    constructor(hostname, port, allNodes, numInstances, gossipPeriod = 5000, protocol = "http") {
-        this.host = hostname
-        this.port = port
-        this.address = `${protocol}://${hostname}:${port}`
+    constructor(hostname, port, allNodes, numInstances, protocol = "http", degreeGossip = 3) {
+        
+        this.host              = hostname
+        this.port              = port
+        this.neighboorhood     = 3
+        this.address           = `${protocol}://${hostname}:${port}`
         this.consistentHashing = new ConsistentHashing(allNodes, numInstances)
-        this.nodes = new AWSet(this.address)
-        for (const node of allNodes) {
-            this.nodes.add(node)
-        }
+        this.degreeGossip      = degreeGossip
+        this.gossipCounter     = []
+
         this.server = express()
         this.server.use(express.json())
-        this.gossipPeriod = gossipPeriod
     }
 
     run() {
 
-        this.server.post('/processRequest', this.processRequest.bind(this))
-        this.server.put('/gossip', this.handleGossip.bind(this))
-        this.server.get('/nodeList', this.getNodeList.bind(this))
+        this.server.get('/ring', this.getRing.bind(this))
+        this.server.get('/ring/nodes', this.getNodesRing.bind(this))
+        this.server.post('/ring/gossip', this.handleGossip.bind(this))
+        this.server.post('/setNodes', this.setNodes.bind(this))
+        this.server.post('/shutdown', this.shutdown.bind(this))
+
+        this.server.post('/postList', this.postList.bind(this))
+        this.server.post('/store', this.store.bind(this))
 
         this.server.listen(this.port, () => {
-            setInterval(() => this.startGossip(), this.gossipPeriod) // Arrow function preserves 'this'
+            setInterval(this.handoff.bind(this), 10000);
             console.log(`Node listening on port ${this.port}!`)
         })
     }
 
-    close() {
-        if (this.server) {
-            this.server.close(() => console.log(`Server ${this.host + this.port} closed! `))
-        }
+    getNodesRing(req, res) {
+        res.json({nodes: JSON.stringify(this.consistentHashing.getNodes())})
     }
 
     handleGossip(req, res) {
-        this.nodes.merge(AWSet.fromJSON(req.body.nodes))
-        console.log(`Received gossip from ${req.body.from}!\n`)
-        res.status(200).json({ nodes: this.nodes.toJSON() });
+
+        let messageCounter = this.gossipCounter[req.body.idAction] ? this.gossipCounter[req.body.idAction] : 0;
+
+        // The message has already been gossiped N times, so we can stop resending it
+        if (messageCounter === this.degreeGossip) {
+            res.end()
+            return
+        }
+        // The message has not been gossiped yet, so we can process it
+        else if (messageCounter === 0) {
+            switch (req.body.action) {
+                case "add":
+                    this.consistentHashing.addNode(req.body.node)
+                    break
+                case "remove":
+                    this.consistentHashing.removeNode(req.body.node)
+                    break
+                default:
+                    res.status(400).json({message: "Invalid action"})
+                    break
+            }
+        }
+
+        res.end()
+        // The gossipCounter will be responsible for counting the number of times the message has been gossiped by the node
+        this.gossipCounter[req.body.idAction] = messageCounter + 1
+        this._sendGossip(req.body.node, req.body.action, req.body.idAction)
     }
 
-    processRequest(req, res) {
-        console.log("Not implemented!")
+    shutdown(res) {
+        console.log('Initiating graceful shutdown...');
+
+        this.moveToHandOff();
+        this.handoff();
+        this._sendGossip(this.address, "remove", crypto.randomBytes(20).toString("hex"))
+
+        this.server.listen().close(() => {
+            console.log(`Server ${this.host}:${this.port} closed gracefully.`);
+            res.status(200).json({message: `Server ${this.host}:${this.port} closed gracefully.`});
+            res.end()
+        });
     }
 
-    getNodeList(req, res) {
-        res.json({ nodes: JSON.stringify(this.nodes.elements()) })
+    _sendGossip(targetNode, action, idAction) {
+        let nodesToGossip = this._chooseRandomNodes(this.degreeGossip);
+
+        for (const nodeToGossip of nodesToGossip) {
+
+            axios.post(`${nodeToGossip}/ring/gossip`, {
+                node: targetNode,
+                action: action,
+                idAction: idAction
+            })
+        }
     }
 
-    async startGossip() {
-        if (this.nodes.elements().length < 2) {
+    _chooseRandomNodes(numNodes) {
+        let nodes = this.consistentHashing.getNodes();
+
+        nodes = nodes.filter(element => element !== this.address);
+        if (numNodes > nodes.length) {
+            return nodes
+        }
+        const randomNodes = [];
+        let randomIndex;
+
+        do {
+            randomIndex = Math.floor(Math.random() * nodes.length);
+            randomNodes.push(nodes[randomIndex])
+            nodes.splice(randomIndex, 1)
+        } while (randomNodes.length !== numNodes)
+
+        return randomNodes;
+    }
+
+    getRing(req, res) {
+        res.status(200).json(this.consistentHashing.getFormattedRingJSON())
+        res.end()
+    }
+
+    moveToHandOff() {
+
+        // This method takes all files stored in the nodes folder and moves them to their handoff folder
+
+        const sanitizedAddress = this.address.replace(/[:/]/g, '_'); // Replace colons and slashes with underscores
+        const folderPath = path.join("data", sanitizedAddress);
+        if (!fs.existsSync(folderPath)) {
+            return
+        }
+        const files = fs.readdirSync(folderPath);
+        const handoffFolderPath = path.join(folderPath, "handoff");
+
+        if (!fs.existsSync(handoffFolderPath)) {
+            fs.mkdirSync(handoffFolderPath, {recursive: true}); // Use a recursive option to create parent directories if they don't exist
+        }
+
+        for (const file of files) {
+            const filePath = path.join(folderPath, file);
+            const handoffFilePath = path.join(handoffFolderPath, file);
+            fs.renameSync(filePath, handoffFilePath);
+        }
+
+
+    }
+
+
+    async handoff() {
+
+        const sanitizedAddress = this.address.replace(/[:/]/g, '_'); // Replace colons and slashes with underscores
+        const folderPath = path.join("data", sanitizedAddress, "handoff");
+
+        if (!fs.existsSync(folderPath)) {
             return
         }
 
-        let randomNode;
-        do {
-            randomNode = this.nodes.elements()[Math.floor(Math.random() * this.nodes.elements().length)];
-        } while (randomNode === this.address)
+        const files = fs.readdirSync(folderPath);
 
-        try {
-            console.log(`Gossiping with ${randomNode}!`)
-            const response = await axios.put(`${randomNode}/gossip`, {
-                nodes: this.nodes.toJSON(),
-                from: this.address
-            })
-            this.nodes.merge(AWSet.fromJSON(response.data.nodes))
-            console.log(`Gossip with ${randomNode} successful!\n`)
-        } catch (e) {
-            console.log(`Failed to gossip with ${randomNode}!\n`)
-            this.nodes.remove(randomNode)
+        for (const file of files) {
+
+            let canDelete     = true;
+            const filePath    = path.join(folderPath, file);
+            const fileData    = JSON.parse(fs.readFileSync(filePath).toString());
+            const requestId   = fileData.id;
+            const targetNodes = this.consistentHashing.getNode(requestId).slice(0, this.neighboorhood);
+
+            for (const node of targetNodes) {
+
+                if (node === this.address) {
+                    continue;
+                }
+
+                console.log(`Forwarding request to ${node}`);
+                const response = await axios.post(`${node}/store`, fileData)
+                if (response.status !== 200) {
+                    canDelete = false;
+                }
+            }
+
+            if (canDelete) {
+                fs.unlinkSync(filePath);
+            }
         }
+
+    }
+
+
+    store(req, handoff = false) {
+
+        const requestBody = req.body;
+        const requestId = requestBody.id;
+        const targetNodes = this.consistentHashing.getNode(requestId).slice(0, this.neighboorhood);
+
+
+        const sanitizedAddress = this.address.replace(/[:/]/g, '_'); // Replace colons and slashes with underscores
+        let folderPath = path.join("data", sanitizedAddress);
+
+        if (!targetNodes.includes(this.address) || handoff) {
+            folderPath = path.join(folderPath, "handoff");
+        }
+
+        if (!fs.existsSync(folderPath)) {
+            fs.mkdirSync(folderPath, {recursive: true}); // Use a recursive option to create parent directories if they don't exist
+        }
+
+        const filePath = path.join(folderPath, `${requestId}.json`);
+        fs.writeFileSync(filePath, JSON.stringify(requestBody));
+        return requestBody;
+
+    }
+
+
+    postList(req, res) {
+
+        const requestBody    = req.body;
+        const requestId      = requestBody.id;
+        const preferenceList = this.consistentHashing.getNode(requestId, this.neighboorhood);
+        let lists            = [];
+        let list             = {};
+
+        let i                = 0
+        let chosenNeighboors = []
+
+        
+
+        while (i < preferenceList.length) {
+            let node = preferenceList[i];
+            try {
+                if (node === this.address) {
+                    list = this.store(req);
+
+                } else {
+                    console.log(`Forwarding request to ${node}`);
+                    list = axios.post(`${node}/store`, requestBody);
+                }
+                if (list != null)
+                    lists.push(list);
+
+                counter.push(node);
+                if (chosenNeighboors.length === this.neighboorhood) {
+                    break;
+                }
+            } catch (error) {
+                console.log(`Error: ${error.message}`);
+            }
+            finally {
+                i++;
+            }
+        }
+
+        if (chosenNeighboors.length < this.neighboorhood) {
+            for (const neighbor of chosenNeighboors) {
+                axios.post(`${neighbor}/store`, requestBody, { params: { handoff: true } });
+            }
+        }
+
+        res.status(200).json({message: `\n Posted to Server and its neighbors!`, data: JSON.stringify(lists[0])});
+        res.end()
+
+    }
+
+    setNodes(req, res) {
+        const nodes = req.body.nodes
+        this.consistentHashing = new ConsistentHashing(nodes, 4)
     }
 }
 
-export { Node };
+export {Node};

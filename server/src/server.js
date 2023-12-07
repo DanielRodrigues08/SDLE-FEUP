@@ -1,62 +1,97 @@
-import * as axios from "axios";
-import * as http from "http";
+import express from "express";
+import axios from "axios";
+import {Node} from "./Node.js";
 
-const PORT = 3000;
-const nodeServers = process.argv.slice(3);
+class Server {
 
-const server = http.createServer(async (req, res) => {
-    try {
-        if (req.method === 'POST' && req.url === '/processRequest') {
-            const requestData = [];
-            req.on('data', chunk => {
-                requestData.push(chunk);
-            });
+    constructor(hostname, port, allNodes, protocol = "http") {
 
-            req.on('end', async () => {
-                try {
-                    const requestBodyString = Buffer.concat(requestData).toString();
-                    const requestBody = typeof requestBodyString === 'string' ? JSON.parse(requestBodyString) : requestBodyString;
-                    if (typeof requestBody !== 'object' || requestBody === null || !('requestId' in requestBody || 'id' in requestBody)) {
-                        throw new Error(`Invalid request body format. Received: ${requestBodyString}`);
-                    }
-                    const requestId = requestBody.id;
-                    const targetNode = nodeServers[Math.floor(Math.random() * nodeServers.length)];
+        this.host          = hostname
+        this.port          = port
+        this.address       = `${protocol}://${hostname}:${port}`
+        this.nodes         = allNodes
+        this.protocol      = protocol
 
+        this.server = express()
+        this.server.use(express.json())
 
-                    if (targetNode) {
-                        const response = await axios.post(`${targetNode}/handleRequest`, { requestId });
-                        res.writeHead(200, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({
-                            message: `Request forwarded to ${targetNode}}`,
-                            targetNode,
-                            response: response.data
-                        }));
-                    } else {
-                        res.writeHead(500, { 'Content-Type': 'application/json' });
-                        res.end(JSON.stringify({ error: 'No available node servers' }));
-                    }
-                } catch (error) {
-                    console.error('Error parsing request data:', error.message);
-                    res.writeHead(400, { 'Content-Type': 'text/plain' });
-                    res.end('Bad Request');
-                }
-            });
-        } else if (req.method === 'GET' && req.url === '/visualizeRing') {
-            consistentHashing.visualizeRing();
-            res.writeHead(200, { 'Content-Type': 'text/plain' });
-            res.end('Check the server console for the consistent hashing ring visualization.');
-        } else {
-            res.writeHead(404, { 'Content-Type': 'text/plain' });
-            res.end('Not Found');
-        }
-    } catch (error) {
-        console.error('Error processing request:', error.message);
-        res.writeHead(500, { 'Content-Type': 'text/plain' });
-        res.end('Internal Server Error');
     }
-});
+
+    run() {
+
+        this.server.post('/postList', this.postList.bind(this))
+        this.server.post('/shutdown', this.shutdown.bind(this))
+        this.server.post('/addNode', this.addNode.bind(this))
+        this.server.post('/removeNode', this.removeNode.bind(this))
 
 
-server.listen(PORT, () => {
-    console.log(`Intermediary server listening at http://localhost:${PORT}`);
-});
+        this.server.listen(this.port, () => {
+            console.log(`Node listening on port ${this.port}!`)
+        })
+    }
+
+    shutdown(req, res) {
+        console.log('Initiating graceful shutdown...');
+        this.server.listen().close(() => {
+            console.log(`Server ${this.host}:${this.port} closed gracefully.`);
+            res.status(200).json({message: `Server ${this.host}:${this.port} closed gracefully.`});
+            res.end();
+        });
+    }
+
+    async addNode(req, res) {
+        const requestBody = req.body;
+        const nodeHost = requestBody.host;
+        const nodePort  = requestBody.port;
+        const node      = `${this.protocol}://${nodeHost}:${nodePort}`
+        this.nodes.add(node);
+        
+        new Node(nodeHost, nodePort, this.nodes, 3).run();
+
+        res.status(200).json({message: `Node ${node} added.`});
+        res.end()
+    }
+
+    async removeNode(req, res) {
+        const requestBody = req.body;
+        const node = requestBody.address;
+        axios.post(`${node}/shutdown`);
+        this.nodes.remove(node);
+
+        
+        res.status(200).json({message: `Node ${node} removed.`});
+        res.end()
+
+    }
+
+    async postList(req, res) {
+
+        try {
+            const requestBody = req.body;
+            const requestId = requestBody.id;
+            let list = {};
+            for (const node of this.nodes) {
+                try {
+                    const response = axios.post(`${node}/postList`, requestBody);
+                    res.status(200).json({message: `Data: ${response.data}`});
+                    break;
+                    
+                }
+                catch (error) {
+                    continue
+                }
+            
+            }
+
+        }
+        catch (error) {
+            console.error("Error posting data:", error.message);
+            res.status(500).json({error: "Internal Server Error"});
+        }
+        finally {
+            res.end()
+        }
+    }
+}
+
+export {Server};
