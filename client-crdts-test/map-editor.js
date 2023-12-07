@@ -3,6 +3,11 @@ import { PNCounter } from "crdts";
 import { AWSet } from "crdts";
 import { createTester } from "./editor.js";
 
+const span = (text) => {
+    const s = document.createElement("span");
+    s.textContent = text;
+    return s;
+}
 
 function mapEditor(map) {
     const editor = document.createElement("div");
@@ -19,9 +24,6 @@ function mapEditor(map) {
         }
         elements.replaceChildren(...items);
         console.log(map.entries());
-    }
-    const addNewItem = () => {
-
     }
     const state = { isAdding: false };
 
@@ -93,23 +95,29 @@ function mapItem(key, value) {
     const item = document.createElement("div");
     item.className = "mapItem";
 
-    const keySpan = document.createElement("span");
-    keySpan.textContent = key;
+    let valueComponent;
     if (value instanceof BAWMap) {
-        console.log("Building a BawMap item");
+        valueComponent = span("Building a BawMap item");
+    }
 
-    } else if (value instanceof AWSet) {
-        console.log("building a awset item")
+    else if (value instanceof AWSet) {
+        valueComponent = span("building a awset item")
 
     } else if (value instanceof PNCounter) {
-        console.log("building a pncounter item")
+        valueComponent = span("building a pncounter item")
 
     } else {
-        const err = document.createElement("span");
         const valueType = value.constructor ? value.constructor.name : typeof value;
-        err.textContent = `${valueType} cannot be a value of a CRDT Map`;
+        valueComponent = span(`${valueType} cannot be a value of a CRDT Map`);
 
     }
+    const keySpan = span(key + ": ")
+    keySpan.addEventListener("click", (e) => {
+        e.stopPropagation();
+        console.log(`Folding Item of key ${key}`)
+    });
+    item.appendChild(keySpan);
+    item.appendChild(valueComponent);
     return item;
 }
 
