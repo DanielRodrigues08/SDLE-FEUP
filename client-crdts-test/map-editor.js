@@ -109,8 +109,9 @@ function mapItem(key, value) {
     item.className = "mapItem";
 
     let valueComponent;
+    debugger;
     if (value instanceof BAWMap) {
-        valueComponent = mapEditor(value);
+        valueComponent = mapEditor(value).editor;
     }
 
     else if (value instanceof AWSet) {
