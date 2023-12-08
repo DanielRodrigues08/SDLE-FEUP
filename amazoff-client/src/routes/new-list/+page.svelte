@@ -1,5 +1,6 @@
 <script>
-    import { openedLists } from "../list/[id]/openedLists";
+    import { openedLists } from "../stores";
+    import { goto } from "$app/navigation";
     let name = "";
 
     function handleEnter(e) {
@@ -8,10 +9,11 @@
             // copy list link to the clip board
             // redirect to new list
             const newList = {
-                id: Math.random() * 20,
+                id: Math.floor(Math.random() * 20),
                 name: name,
             };
-            openedLists.update((l) => [...l, newList]);
+            openedLists.add(newList);
+            goto(`/list/${newList.id}`);
             name = "";
         }
     }
