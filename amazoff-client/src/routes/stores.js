@@ -9,6 +9,7 @@ function createdListsStore() {
             }
         },
         order: ["one"],
+        current: null,
     });
     function addList(list) {
         return update(l => {
@@ -25,8 +26,8 @@ function createdListsStore() {
         add: addList,
         remove: removeList,
         update: updateList,
+        setCurrent: id => update(l => { return { ...l, current: id } })
     }
 }
 export const openedLists = createdListsStore();
-export const openedListsOrder = writable(["one"]);
 
