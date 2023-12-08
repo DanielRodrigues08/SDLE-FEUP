@@ -1,53 +1,32 @@
 <script>
-	import Header from './Header.svelte';
-	import './styles.css';
+    import NewListButton from "./NewListButton.svelte";
+    // This should be a a svelte store to be shared amonsgt other components
+    let openedLists = [
+        {
+            id: 1,
+            name: "Blyat",
+        },
+        {
+            id: 2,
+            name: "Sucka",
+        },
+        {
+            id: 3,
+            name: "Lara",
+        },
+        {
+            id: 4,
+            name: "Daniel",
+        },
+    ];
 </script>
 
-<div class="app">
-	<Header />
+<nav>
+    <a href="/">home</a>
+    <NewListButton />
+    {#each openedLists as shoppingList}
+        <a href={`/list/${shoppingList.id}`}>{shoppingList.name}</a>
+    {/each}
+</nav>
 
-	<main>
-		<slot />
-	</main>
-
-	<footer>
-		<p>visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to learn SvelteKit</p>
-	</footer>
-</div>
-
-<style>
-	.app {
-		display: flex;
-		flex-direction: column;
-		min-height: 100vh;
-	}
-
-	main {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		padding: 1rem;
-		width: 100%;
-		max-width: 64rem;
-		margin: 0 auto;
-		box-sizing: border-box;
-	}
-
-	footer {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		padding: 12px;
-	}
-
-	footer a {
-		font-weight: bold;
-	}
-
-	@media (min-width: 480px) {
-		footer {
-			padding: 12px 0;
-		}
-	}
-</style>
+<slot />
