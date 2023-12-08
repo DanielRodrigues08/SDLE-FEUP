@@ -6,12 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <script>
-        let crdts = import("index.js").then(m => crdts = m);
+        let crdts = import("./index.js").then(m => crdts = m);
         let testing = import("./test/testing.js").then(m => {
             testing = m;
             testing.testFile("./test-bawmap.js");
         }
-        )
+        ) 
     </script>
 
 </head>

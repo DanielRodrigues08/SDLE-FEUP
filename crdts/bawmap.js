@@ -1,4 +1,9 @@
 import { AWSet } from "./awset.js";
+import { BAWSet } from "./bawset.js";
+import { GSet } from "./gset.js";
+import { PCounter } from "./pcounter.js";
+import { PNCounter } from "./pncounter.js";
+import { ROSet } from "./roset.js";
 
 class BAWMap {
     constructor(tag) {
@@ -58,6 +63,38 @@ class BAWMap {
             }
         }
         this.kvs = map;
+    }
+    toJSON() {
+        const res = {};
+        res.ks = this.ks.toJSON();
+        res.kvs = {};
+        for (const [key, value] of this.kvs.entries()) {
+            const valueJSON = value.toJSON();
+            valueJSON["__type"] = value.constructor ? value.constructor.name : typeof value;
+            res.kvs[key] = valueJSON;
+        }
+        return res;
+
+    }
+    static fromJSON(json) {
+        const res = new BAWMap();
+        res.ks = AWSet.fromJSON(json.ks);
+        res.kvs = new Map()
+        // Serialization of CRDTS should be delagated to its own class so that theese dependencies
+        // are broken
+        const possibleClasses = [BAWMap, PNCounter, AWSet, BAWSet, ROSet, PCounter, GSet];
+        const classMapping = {};
+        for (const c of possibleClasses) {
+            const key = c.name;
+            classMapping[key] = c;
+        }
+        for (const key in json.kvs) {
+            const jsonItem = json.kvs[key];
+            const itemClass = classMapping[jsonItem.__type];
+            const item = itemClass.fromJSON(jsonItem);
+            res.kvs.set(key, item);
+        }
+        return res;
     }
 
 }
