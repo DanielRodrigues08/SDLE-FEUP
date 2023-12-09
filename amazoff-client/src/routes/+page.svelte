@@ -15,7 +15,7 @@
         <div class="card-header text-center">{list.name}</div>
         <div class="card-body">ID: {list.id}</div>
         <div class="card-footer">
-          <button class="btn btn-primary">View</button>
+          <a class="btn btn-primary" href="/list/{list.id}">View</a> 
           <button class="btn btn-danger">Delete</button>
         </div>
       </div>

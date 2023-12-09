@@ -24,7 +24,7 @@
 <div class="container">
   <div class="row justify-content-center">
     <div class="col-6">
-      <h1>Add List</h1>
+      <h1 class="text-center">Add List</h1>
       <form>
         <label for="inputName" class="form-label">Name</label>
         <input
@@ -50,14 +50,9 @@
           If you provide an ID that exists in the cloud, you will modify the
           corresponding list.
         </div>
-        <button type="submit" class="btn btn-primary">Add</button>
+        <button type="submit" class="btn btn-primary float-end">Add</button>
       </form>
     </div>
   </div>
 </div>
 
-<style>
-  form {
-    width: 25rem;
-  }
-</style>
