@@ -16,7 +16,6 @@ async function fsGetEntry(id) {
 export async function getList(id) {
     const res = get(openedLists).lists[id];
     // L\ist already loaded
-    debugger;
     if (res) {
         return res;
     }

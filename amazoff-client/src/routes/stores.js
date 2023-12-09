@@ -21,27 +21,31 @@ function createdListsStore() {
             return { order: newOrder, lists: newLists };
         })
     }
-    function removeList(id) { }
-    function updateList(list) { }
-    function closeCurrentList() {
+    function closeList(id) {
         return update(l => {
-            const newLists = [];
-            for (let i = 0; i < l.lists.length; i++) {
-                if (l.lists[i] !== l.current) {
-                    newLists.push(l.lists[i]);
+            const lists = {};
+            const order = [];
+            for (const [key, value] of Object.entries(l.lists)) {
+                if (key !== id) {
+                    lists[key] = value;
                 }
             }
-            const newOrder = l.order.splice(0, 1);
-            return { lists: newLists, order: newOrder, current: null };
-        });
+            for (const key of l.order) {
+                if (key != id) {
+                    order.push(key);
+                }
+            }
+            const current = l.current === id ? null : l.current;
+            return { lists: lists, order: order, current: current };
+        })
     }
+    function updateList(list) { }
     return {
         subscribe,
         add: addList,
-        remove: removeList,
         update: updateList,
+        close: closeList,
         setCurrent: id => update(l => { return { ...l, current: id } }),
-        closeCurrent: closeCurrentList,
     }
 }
 export const openedLists = createdListsStore();
