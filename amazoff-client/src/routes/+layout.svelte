@@ -5,7 +5,7 @@
 </script>
 
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
-    <div class="container-fluid">
+    <div class="container-fluid mx-5">
         <a class="navbar-brand" href="/">
             <img
                 src="/logo.png"
@@ -38,12 +38,12 @@
                 {/each}
             </ul>
         </div>
+        <Permissions />
         <button class="btn btn-secondary mx-2">Sync</button>
         <a href="/add-list" class="btn btn-secondary">Add List</a>
     </div>
 </nav>
 
-<Permissions />
 <slot />
 
 <style>
