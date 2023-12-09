@@ -176,7 +176,10 @@
           </ul>
         </div>
         <div class="card-footer">
-          <button class="btn btn-danger">Delete</button>
+          <button
+            class="btn btn-danger"
+            on:click={() => {list.removeItem(item.name);list = list}}>Delete</button
+          >
         </div>
       </div>
     </div>
