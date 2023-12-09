@@ -1,9 +1,16 @@
 <script>
   import { openedLists } from "../../stores.js";
   import { navigating } from "$app/stores";
+  import { goto } from "$app/navigation";
 
     export let data;
     $: if ($navigating) openedLists.setCurrent(data.id);
+
+    function closeList(){
+      openedLists.closeCurrent();
+      goto("/");
+    }
+
     let list;
     let items;
     $: {
@@ -19,7 +26,7 @@
 </script>
 
 <h1 class="text-center mt-3">{list.name}</h1>
-<button class="btn btn-danger float-end me-5">Close List</button>
+<button class="btn btn-danger float-end me-5" on:click={closeList}>Close List</button>
 <button
   class="btn btn-primary float-end me-2"
   data-bs-toggle="modal"
@@ -74,7 +81,7 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" 
           >Close</button
         >
         <button type="button" class="btn btn-primary">Add</button>

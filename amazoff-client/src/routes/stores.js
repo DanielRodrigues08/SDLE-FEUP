@@ -6,7 +6,7 @@ function createdListsStore() {
     exemplo.id = "one";
     const { subscribe, set, update } = writable({
         lists: {
-            
+
         },
         order: [
 
@@ -23,12 +23,25 @@ function createdListsStore() {
     }
     function removeList(id) { }
     function updateList(list) { }
+    function closeCurrentList() {
+        return update(l => {
+            const newLists = [];
+            for (let i = 0; i < l.lists.length; i++) {
+                if (l.lists[i] !== l.current) {
+                    newLists.push(l.lists[i]);
+                }
+            }
+            const newOrder = l.order.splice(0, 1);
+            return { lists: newLists, order: newOrder, current: null };
+        });
+    }
     return {
         subscribe,
         add: addList,
         remove: removeList,
         update: updateList,
-        setCurrent: id => update(l => { return { ...l, current: id } })
+        setCurrent: id => update(l => { return { ...l, current: id } }),
+        closeCurrent: closeCurrentList,
     }
 }
 export const openedLists = createdListsStore();
