@@ -6,16 +6,18 @@ function createdListsStore() {
     exemplo.id = "one";
     const { subscribe, set, update } = writable({
         lists: {
-            one: exemplo,
+            
         },
-        order: ["one"],
+        order: [
+
+        ],
         current: null,
     });
     function addList(list) {
         return update(l => {
             const newLists = { ...l.lists };
             newLists[list.id] = list;
-            const newOrder = [...l.order, list.id];
+            const newOrder = [list.id, ...l.order];
             return { order: newOrder, lists: newLists };
         })
     }
