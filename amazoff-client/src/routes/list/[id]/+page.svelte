@@ -6,7 +6,7 @@
   $: if ($navigating) openedLists.setCurrent(data.id);
 </script>
 
-<h1 class="text-center">{data.name}</h1>
+<h1 class="text-center mt-3">{data.name}</h1>
 <button class="btn btn-danger float-end mx-5">Close</button>
 
 <div class="row row-cols-1 row-cols-md-5 g-4 my-5 mx-4">

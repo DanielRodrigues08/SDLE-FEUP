@@ -6,7 +6,7 @@
   $: openedLists.setCurrent(null);
 </script>
 
-<h1 class="text-center">Amazoff</h1>
+<h1 class="text-center mt-3">Amazoff</h1>
 
 <div class="row row-cols-1 row-cols-md-5 g-4 m-5">
   {#each data.lists as list}
