@@ -1,5 +1,5 @@
 import { writable } from "svelte/store";
-
+export const ssr = false;
 function createdListsStore() {
     const { subscribe, set, update } = writable({
         lists: {
@@ -31,3 +31,11 @@ function createdListsStore() {
 }
 export const openedLists = createdListsStore();
 
+export const storageSettings = writable({
+    fs: {
+        access: false,
+        dir: null,
+    },
+
+    localStorage: false,
+});

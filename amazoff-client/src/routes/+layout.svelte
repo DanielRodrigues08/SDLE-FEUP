@@ -1,6 +1,7 @@
 <script>
     import { openedLists } from "./stores.js";
     // This should be a a svelte store to be shared amongst other components
+    export const ssr = false;
     
 </script>
 
