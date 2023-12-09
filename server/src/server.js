@@ -26,7 +26,7 @@ class Server {
 
 
         this.server.listen(this.port, () => {
-            console.log(`Node listening on port ${this.port}!`)
+            console.log(`Server listening on port ${this.port}!`)
         })
     }
 
