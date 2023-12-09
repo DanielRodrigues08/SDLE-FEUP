@@ -9,7 +9,7 @@
     $: {
       list = $openedLists.lists[data.id];
       items = [];
-      for(const [key,value] of list.items.elements()){
+      for(const [key,value] of list.items.entries()){
         items.push ({name:key,
         desired:value.get("desired").value(),
         purchased : value.get("purchased").value()});
