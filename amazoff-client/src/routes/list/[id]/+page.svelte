@@ -18,6 +18,11 @@
   }
 
   let list;
+  function changeQuantity(type, name, amount) {
+    debugger;
+    list.changeQuantity(name, type, amount);
+    list = list;
+  }
 
   function addNewItem() {
     newItem.name = newItem.name.trim();
@@ -142,22 +147,30 @@
               Desired: <strong>{item.desired}</strong>
               <button
                 class="btn btn-info btn-sm float-end ms-1"
-                style="width:1.5rem;">+</button
+                style="width:1.5rem;"
+                on:click={() =>
+                  changeQuantity("desired", item.name, "increment")}>+</button
               >
               <button
                 class="btn btn-info btn-sm float-end"
-                style="width:1.5rem;">-</button
+                style="width:1.5rem;"
+                on:click={() =>
+                  changeQuantity("desired", item.name, "decrement")}>-</button
               >
             </li>
             <li class="list-group-item">
               Purchased: <strong>{item.purchased}</strong>
               <button
                 class="btn btn-info btn-sm float-end ms-1"
-                style="width:1.5rem;">+</button
+                style="width:1.5rem;"
+                on:click={() =>
+                  changeQuantity("purchased", item.name, "increment")}>+</button
               >
               <button
                 class="btn btn-info btn-sm float-end"
-                style="width:1.5rem;">-</button
+                style="width:1.5rem;"
+                on:click={() =>
+                  changeQuantity("purchased", item.name, "decrement")}>-</button
               >
             </li>
           </ul>

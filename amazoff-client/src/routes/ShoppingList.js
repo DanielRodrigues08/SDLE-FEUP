@@ -14,6 +14,14 @@ class ShoppingList {
     removeItem(name) {
         this.items.remove(name);
     }
+    changeQuantity(item, type, increment) {
+        const counter = this.items.get(item).get(type);
+        if (increment == "increment") {
+            counter.increment();
+        } else if (counter.value() > 0) {
+            counter.decrement();
+        }
+    }
     toJSON() {
         const res = {
             id: this.id,
