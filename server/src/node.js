@@ -23,7 +23,7 @@ class Node {
     }
 
     run() {
-
+        
         this.server.get('/ring', this.getRing.bind(this))
         this.server.get('/ring/nodes', this.getNodesRing.bind(this))
         this.server.post('/ring/gossip', this.handleGossip.bind(this))
