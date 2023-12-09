@@ -2,9 +2,12 @@
   import { openedLists } from "../../stores.js";
   import { navigating } from "$app/stores";
   import { goto } from "$app/navigation";
+  import { saveList } from "../../ShoppingListManager.js";
 
   export let data;
   $: if ($navigating) openedLists.setCurrent(data.id);
+
+  let list;
 
   let newItem = {
     name: "",
@@ -17,14 +20,18 @@
     openedLists.close(data.id);
   }
 
-  let list;
-  function changeQuantity(type, name, amount) {
-    debugger;
-    list.changeQuantity(name, type, amount);
-    list = list;
+  function updateList(f) {
+    return (params = []) => {
+      f(...params);
+      list = list;
+      saveList(list);
+    };
   }
+  const changeQuantity = updateList((type, name, amount) =>
+    list.changeQuantity(name, type, amount),
+  );
 
-  function addNewItem() {
+  const addNewItem = updateList(() => {
     newItem.name = newItem.name.trim();
     if (newItem.name === "") {
       return;
@@ -32,11 +39,9 @@
     list.addItem(newItem.name);
     list.items.get(newItem.name).get("desired").increment(newItem.desired);
     list.items.get(newItem.name).get("purchased").increment(newItem.purchased);
-    const myModal = document.getElementById("closeModalDoDani")?.click();
+    document.getElementById("closeModalDoDani")?.click();
+  });
 
-    // Magic Svelte Sama
-    list = list;
-  }
   function handleKeyDown(e) {
     if (e.key === "Enter") {
       addNewItem();
@@ -149,13 +154,13 @@
                 class="btn btn-info btn-sm float-end ms-1"
                 style="width:1.5rem;"
                 on:click={() =>
-                  changeQuantity("desired", item.name, "increment")}>+</button
+                  changeQuantity(["desired", item.name, "increment"])}>+</button
               >
               <button
                 class="btn btn-info btn-sm float-end"
                 style="width:1.5rem;"
                 on:click={() =>
-                  changeQuantity("desired", item.name, "decrement")}>-</button
+                  changeQuantity(["desired", item.name, "decrement"])}>-</button
               >
             </li>
             <li class="list-group-item">
@@ -164,13 +169,15 @@
                 class="btn btn-info btn-sm float-end ms-1"
                 style="width:1.5rem;"
                 on:click={() =>
-                  changeQuantity("purchased", item.name, "increment")}>+</button
+                  changeQuantity(["purchased", item.name, "increment"])}
+                >+</button
               >
               <button
                 class="btn btn-info btn-sm float-end"
                 style="width:1.5rem;"
                 on:click={() =>
-                  changeQuantity("purchased", item.name, "decrement")}>-</button
+                  changeQuantity(["purchased", item.name, "decrement"])}
+                >-</button
               >
             </li>
           </ul>
@@ -178,7 +185,11 @@
         <div class="card-footer">
           <button
             class="btn btn-danger"
-            on:click={() => {list.removeItem(item.name);list = list}}>Delete</button
+            on:click={() =>
+              updateList(() => {
+                list.removeItem(item.name);
+                list = list;
+              })([])}>Delete</button
           >
         </div>
       </div>

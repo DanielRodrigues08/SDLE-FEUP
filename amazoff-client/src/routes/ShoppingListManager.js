@@ -61,7 +61,7 @@ export async function createNewList(name) {
 }
 
 
-async function saveList(list) {
+export async function saveList(list) {
     const fs = get(storageSettings).fs;
     if (fs.access && fs.dir) {
         const fileHandle = await fs.dir.getFileHandle(list.id, { create: true });
