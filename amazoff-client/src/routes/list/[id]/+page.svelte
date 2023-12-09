@@ -1,10 +1,125 @@
 <script>
-    import { openedLists } from "../../stores.js";
-    import { navigating } from "$app/stores";
+  import { openedLists } from "../../stores.js";
+  import { navigating } from "$app/stores";
 
     export let data;
     $: if ($navigating) openedLists.setCurrent(data.id);
-    $: list = $openedLists.lists[data.id];
+    let list;
+    let items;
+    $: {
+      list = $openedLists.lists[data.id];
+      items = [];
+      for(const [key,value] of list.items.elements()){
+        items.push ({name:key,
+        desired:value.get("desired").value(),
+        purchased : value.get("purchased").value()});
+      }
+
+    }
 </script>
 
-<h1>List Page {list.name}</h1>
+<h1 class="text-center mt-3">{list.name}</h1>
+<button class="btn btn-danger float-end me-5">Close List</button>
+<button
+  class="btn btn-primary float-end me-2"
+  data-bs-toggle="modal"
+  data-bs-target="#addItem">Add Item</button
+>
+
+<!-- Modal for add item -->
+
+<div class="modal fade" id="addItem" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5">Add item</h1>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label for="name" class="form-label">Item Name</label>
+            <input
+              type="text"
+              class="form-control"
+              id="name"
+              placeholder="Enter item name"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="desired" class="form-label">Desired</label>
+            <input
+              type="number"
+              class="form-control"
+              id="quantity"
+              placeholder="Desired quantity"
+              min="1"
+            />
+          </div>
+          <div class="mb-3">
+            <label for="purchased" class="form-label">Purchased</label>
+            <input
+              type="number"
+              class="form-control"
+              id="purchased"
+              placeholder="Purchased quantity"
+              min="0"
+            />
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+          >Close</button
+        >
+        <button type="button" class="btn btn-primary">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--  END add item -->
+
+<div class="row row-cols-1 row-cols-md-5 g-4 my-5 mx-4">
+  {#each  items as item}
+    <div class="col">
+      <div class="card">
+        <div class="card-header text-center">{item.name}</div>
+        <div class="card-body">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">
+              Desired: <strong>{item.desired}</strong>
+              <button
+                class="btn btn-info btn-sm float-end ms-1"
+                style="width:1.5rem;">+</button
+              >
+              <button
+                class="btn btn-info btn-sm float-end"
+                style="width:1.5rem;">-</button
+              >
+            </li>
+            <li class="list-group-item">
+              Purchased: <strong>{item.purchased}</strong>
+              <button
+                class="btn btn-info btn-sm float-end ms-1"
+                style="width:1.5rem;">+</button
+              >
+              <button
+                class="btn btn-info btn-sm float-end"
+                style="width:1.5rem;">-</button
+              >
+            </li>
+          </ul>
+        </div>
+        <div class="card-footer">
+          <button class="btn btn-danger">Delete</button>
+        </div>
+      </div>
+    </div>
+  {/each}
+</div>

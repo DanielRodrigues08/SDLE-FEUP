@@ -1,5 +1,4 @@
 import { BAWMap, PNCounter } from "crdts";
-export const ssr = false;
 class ShoppingList {
     constructor(name) {
         this.name = name;

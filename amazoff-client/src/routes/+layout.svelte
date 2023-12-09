@@ -6,7 +6,7 @@
 
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">
+        <a class="navbar-brand" href="/">
             <img
                 src="/logo.png"
                 alt="Logo"
@@ -38,7 +38,8 @@
                 {/each}
             </ul>
         </div>
-        <a href="/new-list" class="btn btn-secondary">+</a>
+        <button class="btn btn-secondary mx-2">Sync</button>
+        <a href="/add-list" class="btn btn-secondary">Add List</a>
     </div>
 </nav>
 
