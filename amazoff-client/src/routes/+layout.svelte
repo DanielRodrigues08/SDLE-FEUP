@@ -39,7 +39,7 @@
             </ul>
         </div>
         <button class="btn btn-secondary mx-2">Sync</button>
-        <a href="/add-list" class="btn btn-secondary">+</a>
+        <a href="/add-list" class="btn btn-secondary">Add List</a>
     </div>
 </nav>
 <slot />

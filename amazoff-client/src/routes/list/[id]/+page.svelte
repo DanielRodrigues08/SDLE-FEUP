@@ -7,13 +7,28 @@
 </script>
 
 <h1 class="text-center mt-3">{data.name}</h1>
-<button class="btn btn-danger float-end mx-5">Close</button>
+<button class="btn btn-danger float-end me-5">Close List</button>
+<button
+  class="btn btn-primary float-end me-2"
+  data-bs-toggle="modal"
+  data-bs-target="#addItem">Add Item</button
+>
 
-<div class="row row-cols-1 row-cols-md-5 g-4 my-5 mx-4">
-  <div class="col">
-    <div class="card">
-      <div class="card-header text-center">Add Item</div>
-      <div class="card-body">
+<!-- Modal for add item -->
+
+<div class="modal fade" id="addItem" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5">Add item</h1>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
         <form>
           <div class="mb-3">
             <label for="name" class="form-label">Item Name</label>
@@ -44,11 +59,21 @@
               min="0"
             />
           </div>
-          <button type="submit" class="btn btn-primary">Add</button>
         </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
+          >Close</button
+        >
+        <button type="button" class="btn btn-primary">Add</button>
       </div>
     </div>
   </div>
+</div>
+
+<!--  END add item -->
+
+<div class="row row-cols-1 row-cols-md-5 g-4 my-5 mx-4">
   {#each data.items as item}
     <div class="col">
       <div class="card">
