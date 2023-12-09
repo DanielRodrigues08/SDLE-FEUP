@@ -5,7 +5,6 @@
 
     function handleEnter(e) {
         if (e.key === "Enter") {
-            console.log("Creating New List");
             // copy list link to the clip board
             // redirect to new list
             const newList = {
@@ -13,6 +12,7 @@
                 name: name,
             };
             openedLists.add(newList);
+            openedLists.setCurrent(newList.id);
             goto(`/list/${newList.id}`);
             name = "";
         }

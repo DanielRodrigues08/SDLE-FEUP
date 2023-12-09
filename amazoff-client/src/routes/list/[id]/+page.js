@@ -6,6 +6,5 @@ export function load({ params }) {
     const res = get(openedLists).lists[params.id];
     // .....
     //..... \
-    console.log(res);
     return res;
 }

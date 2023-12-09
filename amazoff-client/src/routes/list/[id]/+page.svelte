@@ -1,7 +1,9 @@
 <script>
     import { openedLists } from "../../stores.js";
+    import { navigating } from "$app/stores";
+
     export let data;
-    openedLists.setCurrent(data.id);
+    $: if ($navigating) openedLists.setCurrent(data.id);
 </script>
 
 <h1>List Page {data.name}</h1>
