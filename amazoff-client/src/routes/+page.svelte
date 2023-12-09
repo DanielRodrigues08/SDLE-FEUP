@@ -82,8 +82,8 @@
         {:else}
             <p>Amazoff Has Access To The File System</p>
             <p>Storing files in {$storageSettings.fs.dir.name}</p>
+            <button on:click={removeFsAccess}>Remove FileSytem Acess</button>
         {/if}
-        <button on:click={removeFsAccess}>Remove FileSytem Acess</button>
         <button on:click={changeFsDirectory}>Change Directory</button>
     {:else}
         <p>Amazoff does not have Access To The File System</p>

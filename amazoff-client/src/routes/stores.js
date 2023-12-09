@@ -36,6 +36,5 @@ export const storageSettings = writable({
         access: false,
         dir: null,
     },
-
     localStorage: false,
 });
