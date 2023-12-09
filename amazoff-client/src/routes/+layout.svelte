@@ -1,8 +1,7 @@
 <script>
+    import Permissions from "./Permissions.svelte";
     import { openedLists } from "./stores.js";
     // This should be a a svelte store to be shared amongst other components
-    export const ssr = false;
-    
 </script>
 
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
@@ -42,6 +41,8 @@
         <a href="/new-list" class="btn btn-secondary">+</a>
     </div>
 </nav>
+
+<Permissions />
 <slot />
 
 <style>
@@ -52,3 +53,4 @@
         color: white;
     }
 </style>
+

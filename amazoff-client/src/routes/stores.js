@@ -1,12 +1,12 @@
 import { writable } from "svelte/store";
-export const ssr = false;
+import { ShoppingList } from "./ShoppingList";
+
 function createdListsStore() {
+    const exemplo = new ShoppingList("Exemplo");
+    exemplo.id = "one";
     const { subscribe, set, update } = writable({
         lists: {
-            one: {
-                id: "one",
-                name: "Example"
-            }
+            one: exemplo,
         },
         order: ["one"],
         current: null,
