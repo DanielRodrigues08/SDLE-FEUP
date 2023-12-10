@@ -49,7 +49,6 @@ class Server {
         const nodePort    = requestBody.port;
         const node        = `${this.protocol}://${nodeHost}:${nodePort}`
         this.nodes.add(node);
-        console.log(node)
         new Node(nodeHost, nodePort, this.nodes, 3).run();
         await axios.post(`${node}/ring/gossip`, {
             node: node,
