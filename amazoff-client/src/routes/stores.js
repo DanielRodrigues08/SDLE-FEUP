@@ -57,3 +57,7 @@ export const storageSettings = writable({
     },
     localStorage: false,
 });
+
+export const userLists = writable({
+   
+});
