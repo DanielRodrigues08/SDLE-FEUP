@@ -4,6 +4,7 @@
   import { goto } from "$app/navigation";
   import { saveList } from "../../ShoppingListManager.js";
   import { BAWMap } from "crdts";
+  import { userSettings } from "../../stores.js";
 
   export let data;
   $: if ($navigating) openedLists.setCurrent(data.id);
@@ -31,7 +32,7 @@
     };
   }
   const changeQuantity = updateList((type, name, amount) =>
-    list.changeQuantity(name, type, amount),
+    list.changeQuantity(name, type, amount)
   );
 
   const addNewItem = updateList(() => {
@@ -51,7 +52,11 @@
     }
   }
   function syncList() {
-    fetch("http://localhost:3000/postList", {
+    if (!$userSettings.server) {
+      return;
+    }
+
+    fetch($userSettings.server + "/postList", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -83,6 +88,15 @@
       }
     }
   }
+
+  let syncButton;
+  $: {
+    if ($userSettings.server) {
+      syncButton = "btn-success";
+    } else {
+      syncButton = "btn-danger";
+    }
+  }
 </script>
 
 <h1 class="text-center mt-3">{list.name}</h1>
@@ -94,7 +108,7 @@
   data-bs-toggle="modal"
   data-bs-target="#addItem">Add Item</button
 >
-<button class="btn btn-primary float-end mx-2" on:click={syncList}
+<button class="btn {syncButton} float-end mx-2" on:click={syncList}
   >Sync List</button
 >
 
