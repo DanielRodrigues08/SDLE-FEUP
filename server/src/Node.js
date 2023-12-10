@@ -10,14 +10,14 @@ import crypto from "crypto";
 class Node {
     constructor(hostname, port, allNodes, numInstances, protocol = "http", degreeGossip = 3) {
 
-        this.host              = hostname
-        this.port              = port
-        this.neighboorhood     = 3
-        this.address           = `${protocol}://${hostname}:${port}`
-        this.numInstances      = numInstances
+        this.host = hostname
+        this.port = port
+        this.neighboorhood = 3
+        this.address = `${protocol}://${hostname}:${port}`
+        this.numInstances = numInstances
         this.consistentHashing = new ConsistentHashing(allNodes, numInstances)
-        this.degreeGossip      = degreeGossip
-        this.gossipCounter     = []
+        this.degreeGossip = degreeGossip
+        this.gossipCounter = []
 
         this.server = express()
         this.server.use(express.json())
@@ -79,7 +79,7 @@ class Node {
 
     shutdown(req, res) {
         console.log('Initiating graceful shutdown...');
-    
+
         this.moveToHandOff();
         this._sendGossip(this.address, "remove", crypto.randomBytes(20).toString("hex"))
         this.consistentHashing.removeNode(this.address)
@@ -158,7 +158,7 @@ class Node {
         catch (error) {
             console.log(error)
         }
-        
+
     }
 
     moveToHandOff() {
@@ -220,7 +220,7 @@ class Node {
                 }
 
                 console.log(`Forwarding request to ${node}`);
-                const response = await axios.post(`${node}/store`, {id: requestId, payload: fileData})
+                const response = await axios.post(`${node}/store`, { id: requestId, payload: fileData })
                 if (response.status !== 200) {
                     canDelete = false;
                 }
@@ -277,14 +277,17 @@ class Node {
 
         const filePath = path.join(folderPath, `${requestId}.json`);
 
-        let old_crdt = new BAWMap();
+        let old_crdt = new BAWMap(crypto.randomUUID());
         if (fs.existsSync(filePath)) {
             old_crdt = BAWMap.fromJSON(JSON.parse(fs.readFileSync(filePath, 'utf-8')));
 
         }
-        //console.log(typeof crdt);
-        //consoVle.log(crdt);
+        console.log("================================")
+        console.log(`Received keys:${BAWMap.fromJSON(crdt).keys()}`);
+        console.log(`Old  keys    :${old_crdt.keys()}`);
         old_crdt.merge(BAWMap.fromJSON(crdt))
+        console.log(`Merged keys  :${old_crdt.keys()}`);
+        console.log("================================")
         fs.writeFileSync(filePath, JSON.stringify(old_crdt.toJSON()));
         return old_crdt.toJSON();
 
