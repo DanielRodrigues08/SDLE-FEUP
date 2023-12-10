@@ -267,7 +267,7 @@
             </div>
           {:else}
             <p class="fw-semi-bold m-3">
-              Please connect to a server before adding a Node!
+              Please connect to a server before pausing a Node!
             </p>
           {/if}
         </div>
