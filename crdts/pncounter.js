@@ -29,9 +29,9 @@ class PNCounter {
     }
     toJSON() {
         const res = {};
-        for (const key in this) {
-            res[key] = JSON.stringify(key);
-        }
+        res.tag = this.tag;
+        res.positive = this.positive.toJSON();
+        res.negative = this.negative.toJSON();
         return res;
     }
     static fromJSON(json) {

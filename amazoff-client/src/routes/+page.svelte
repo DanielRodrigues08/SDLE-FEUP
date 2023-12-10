@@ -1,21 +1,28 @@
 <script>
-  import { openedLists } from "./stores.js";
+  import { openedLists, userLists } from "./stores.js";
+  import { goto } from "$app/navigation";
+  import { pollForNewLists } from "./ShoppingListManager.js";
 
-  export let data;
-
+  pollForNewLists();
+  setInterval(pollForNewLists, 5 * 1000);
   $: openedLists.setCurrent(null);
 </script>
 
 <h1 class="text-center mt-3">Amazoff</h1>
 
 <div class="row row-cols-1 row-cols-md-5 g-4 m-5">
-  {#each data.lists as list}
+  {#each Object.keys($userLists) as link}
     <div class="col">
       <div class="card" style="max-width: 20rem">
-        <div class="card-header text-center">{list.name}</div>
-        <div class="card-body">ID: {list.id}</div>
+        <div class="card-header text-center">{$userLists[link]}</div>
+        <div class="card-body">ID: {link}</div>
         <div class="card-footer">
-          <a class="btn btn-primary" href="/list/{list.id}">View</a> 
+          <button
+            class="btn btn-primary"
+            on:click={() => {
+              goto(`/list/${link}`);
+            }}>View</button
+          >
           <button class="btn btn-danger">Delete</button>
         </div>
       </div>

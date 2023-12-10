@@ -1,5 +1,5 @@
 import { get } from "svelte/store";
-import { openedLists, storageSettings } from "./stores";
+import { openedLists, storageSettings, userLists } from "./stores";
 import { ShoppingList } from "./ShoppingList";
 async function fsGetEntry(id) {
     const fs = get(storageSettings).fs;
@@ -50,7 +50,6 @@ export async function getList(id) {
 async function loadListFromFile(fileEntry) {
     const file = await fileEntry.getFile();
     const json = JSON.parse(await file.text());
-    console.log(json)
     return ShoppingList.fromJSON(json);
 }
 
@@ -58,6 +57,25 @@ export async function createNewList(name) {
     const list = new ShoppingList(name);
     await saveList(list);
     return list;
+}
+
+export async function pollForNewLists() {
+    const fs = get(storageSettings).fs;
+    const all = get(userLists);
+    if (fs.dir == null || !fs.access) {
+        return null;
+    }
+    for await (const entry of fs.dir.values()) {
+        const id = all[entry.name];
+        if (!id) {
+            const list = await loadListFromFile(entry);
+            userLists.update((l) => {
+                const newL = { ...l };
+                newL[list.id] = list.name;
+                return newL;
+            });
+        }
+    }
 }
 
 

@@ -3,7 +3,8 @@ class ShoppingList {
     constructor(name) {
         this.name = name;
         this.id = crypto.randomUUID();
-        this.items = new BAWMap();
+        // TODO o id deveria ser diferente
+        this.items = new BAWMap(this.id);
     }
     addItem(name) {
         const item = new BAWMap(this.id);
