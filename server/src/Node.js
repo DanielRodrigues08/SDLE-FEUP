@@ -108,16 +108,32 @@ class Node {
         });
     }
 
-    _sendGossip(targetNode, action, idAction) {
-        let nodesToGossip = this._chooseRandomNodes(this.degreeGossip);
+    async _sendGossip(targetNode, action, idAction, nodesToGossip = [], timeout = 5000) {
+        if (nodesToGossip.length === 0) {
+            nodesToGossip = this._chooseRandomNodes(this.degreeGossip);
+        }
+
+        const nodesDown = []
+
 
         for (const nodeToGossip of nodesToGossip) {
+            try {
+                await axios.post(`${nodeToGossip}/ring/gossip`, {
+                    node: targetNode,
+                    action: action,
+                    idAction: idAction
+                })
+            }
+            catch (error) {
+                nodesDown.push(nodeToGossip)
+            }
+        }
 
-            axios.post(`${nodeToGossip}/ring/gossip`, {
-                node: targetNode,
-                action: action,
-                idAction: idAction
-            })
+
+        if (nodesDown.length !== 0) {
+            setTimeout(() => {
+                this._sendGossip(targetNode, action, idAction, nodesDown, timeout)
+            }, timeout)
         }
     }
 
