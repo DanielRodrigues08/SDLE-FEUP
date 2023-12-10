@@ -282,12 +282,7 @@ class Node {
             old_crdt = BAWMap.fromJSON(JSON.parse(fs.readFileSync(filePath, 'utf-8')));
 
         }
-        console.log("================================")
-        console.log(`Received keys:${BAWMap.fromJSON(crdt).keys()}`);
-        console.log(`Old  keys    :${old_crdt.keys()}`);
         old_crdt.merge(BAWMap.fromJSON(crdt))
-        console.log(`Merged keys  :${old_crdt.keys()}`);
-        console.log("================================")
         fs.writeFileSync(filePath, JSON.stringify(old_crdt.toJSON()));
         return old_crdt.toJSON();
 
