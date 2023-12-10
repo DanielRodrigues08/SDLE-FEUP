@@ -24,23 +24,13 @@ class Server {
     run() {
 
         this.server.post('/postList', this.postList.bind(this))
-        this.server.post('/shutdown', this.shutdown.bind(this))
         this.server.post('/addNode', this.addNode.bind(this))
         this.server.post('/removeNode', this.removeNode.bind(this))
-
+        this.server.post('/pauseNode', this.pauseNode.bind(this))
 
         this.server.listen(this.port, () => {
             console.log(`Server listening on port ${this.port}!`)
         })
-    }
-
-    shutdown(req, res) {
-        console.log('Initiating graceful shutdown...');
-        this.server.listen().close(() => {
-            console.log(`Server ${this.host}:${this.port} closed gracefully.`);
-            res.status(200).json({message: `Server ${this.host}:${this.port} closed gracefully.`});
-            res.end();
-        });
     }
 
     async addNode(req, res) {
@@ -72,6 +62,14 @@ class Server {
         res.status(200).json({message: `Node ${node} removed.`});
         res.end()
 
+    }
+
+    async pauseNode(req, res) {
+        const requestBody = req.body;
+        const node = requestBody.address;
+        const await axios.post(`${node}/pause`);
+        res.status(200).json({message: `Node ${node} paused.`});
+        res.end()
     }
 
     async postList(req, res) {

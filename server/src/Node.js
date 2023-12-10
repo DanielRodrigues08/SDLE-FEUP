@@ -10,17 +10,25 @@ import crypto from "crypto";
 class Node {
     constructor(hostname, port, allNodes, numInstances, protocol = "http", degreeGossip = 3) {
 
-        this.host              = hostname
-        this.port              = port
-        this.neighboorhood     = 3
-        this.address           = `${protocol}://${hostname}:${port}`
-        this.numInstances      = numInstances
+        this.host = hostname
+        this.port = port
+        this.neighboorhood = 3
+        this.address = `${protocol}://${hostname}:${port}`
+        this.numInstances = numInstances
         this.consistentHashing = new ConsistentHashing(allNodes, numInstances)
-        this.degreeGossip      = degreeGossip
-        this.gossipCounter     = []
+        this.degreeGossip = degreeGossip
+        this.gossipCounter = []
 
         this.server = express()
         this.server.use(express.json())
+        this.start()
+    }
+
+    start() {
+        this.server.listen(this.port, () => {
+            setInterval(this.handoff.bind(this), 10000);
+            console.log(`Node listening on port ${this.port}!`)
+        })
     }
 
     run() {
@@ -30,14 +38,11 @@ class Node {
         this.server.post('/ring/gossip', this.handleGossip.bind(this))
         this.server.post('/setNodes', this.setNodes.bind(this))
         this.server.post('/shutdown', this.shutdown.bind(this))
-
+        this.server.post('/pause', this.pause.bind(this))
         this.server.post('/postList', this.postList.bind(this))
         this.server.post('/store', this.storeEndpoint.bind(this))
 
-        this.server.listen(this.port, () => {
-            setInterval(this.handoff.bind(this), 10000);
-            console.log(`Node listening on port ${this.port}!`)
-        })
+
     }
 
     getNodesRing(req, res) {
@@ -77,9 +82,18 @@ class Node {
         this._sendGossip(req.body.node, req.body.action, req.body.idAction)
     }
 
+    pause(req, res) {
+        this.server.listen().close(() => {
+            console.log(`Server ${this.host}:${this.port} paused.`);
+            setTimeout(() => {this.start()}, req.body.time * 1000)
+            res.status(200).json({ message: `Server ${this.host}:${this.port} paused.` });
+        });
+    }
+
+
     shutdown(req, res) {
         console.log('Initiating graceful shutdown...');
-    
+
         this.moveToHandOff();
         this._sendGossip(this.address, "remove", crypto.randomBytes(20).toString("hex"))
         this.consistentHashing.removeNode(this.address)
@@ -158,7 +172,7 @@ class Node {
         catch (error) {
             console.log(error)
         }
-        
+
     }
 
     moveToHandOff() {
@@ -220,7 +234,7 @@ class Node {
                 }
 
                 console.log(`Forwarding request to ${node}`);
-                const response = await axios.post(`${node}/store`, {id: requestId, payload: fileData})
+                const response = await axios.post(`${node}/store`, { id: requestId, payload: fileData })
                 if (response.status !== 200) {
                     canDelete = false;
                 }

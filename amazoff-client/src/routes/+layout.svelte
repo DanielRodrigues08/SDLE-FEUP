@@ -1,7 +1,7 @@
 <script>
   import Permissions from "./Permissions.svelte";
   import SyncSettings from "./SyncSettings.svelte";
-  import { openedLists } from "./stores.js";
+  import { openedLists, storageSettings } from "./stores.js";
   // This should be a a svelte store to be shared amongst other components
 </script>
 
@@ -62,7 +62,9 @@
     </div>
     <Permissions />
     <SyncSettings />
-    <a href="/add-list" class="btn btn-secondary">Add List</a>
+    {#if $storageSettings.fs.access}
+      <a href="/add-list" class="btn btn-secondary">Add List</a>
+    {/if}
   </div>
 </nav>
 
