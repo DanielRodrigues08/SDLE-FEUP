@@ -24,7 +24,7 @@ if [ -z "$nginx_conf_path" ]; then
 fi
 
 # Copy the Nginx configuration file to the appropriate directory
-sudo cp nginx.conf "$nginx_conf_path"
+sudo cp backup.conf "$nginx_conf_path"
 if [ $? -ne 0 ]; then
     echo "Error copying Nginx configuration file."
     exit 1
