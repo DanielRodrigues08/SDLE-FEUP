@@ -49,6 +49,24 @@
       addNewItem();
     }
   }
+  function syncList() {
+    fetch("http://localhost:3000/api/sync", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        id: list.id,
+        payload: list.toJSON(),
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        list = list;
+      })
+      .catch((err) => console.log(err));
+  }
   let items;
   $: {
     if (data.id === $openedLists.current && $openedLists.lists[data.id]) {
@@ -73,6 +91,9 @@
   class="btn btn-primary float-end me-2"
   data-bs-toggle="modal"
   data-bs-target="#addItem">Add Item</button
+>
+<button class="btn btn-primary float-end mx-2" on:click={syncList}
+  >Sync List</button
 >
 
 <!-- Modal for add item -->
