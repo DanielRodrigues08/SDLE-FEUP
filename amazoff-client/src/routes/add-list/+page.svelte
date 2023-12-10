@@ -3,11 +3,13 @@
   import { goto } from "$app/navigation";
   import { createNewList } from "../ShoppingListManager";
   let name = "";
+  let listID = "";
 
   async function handleClick() {
-    const lName = name == "" ? "New List" : name;
-    debugger;
-    const list = await createNewList(lName);
+    const proccessedName = name == "" ? "New List" : name;
+    listID = listID.trim();
+    const processedListId = listID === "" ? null : listID;
+    const list = await createNewList(proccessedName,listID);
     goto(`/list/${list.id}`);
   }
 
@@ -33,7 +35,12 @@
         </div>
 
         <label for="inputID" class="form-label">ID</label>
-        <input type="text" class="form-control" id="inputID" />
+        <input
+          type="text"
+          class="form-control"
+          id="inputID"
+          bind:value={listID}
+        />
         <div id="inputID" class="form-text">
           Provide the list's identifying number to create it. This ID will be
           used to share the list with others.

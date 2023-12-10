@@ -291,13 +291,11 @@ class Node {
 
         const filePath = path.join(folderPath, `${requestId}.json`);
 
-        let old_crdt = new BAWMap();
+        let old_crdt = new BAWMap(crypto.randomUUID());
         if (fs.existsSync(filePath)) {
             old_crdt = BAWMap.fromJSON(JSON.parse(fs.readFileSync(filePath, 'utf-8')));
 
         }
-        //console.log(typeof crdt);
-        //consoVle.log(crdt);
         old_crdt.merge(BAWMap.fromJSON(crdt))
         fs.writeFileSync(filePath, JSON.stringify(old_crdt.toJSON()));
         return old_crdt.toJSON();

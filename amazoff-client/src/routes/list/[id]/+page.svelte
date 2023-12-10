@@ -26,13 +26,11 @@
     return (params = []) => {
       f(...params);
       list = list;
-      console.log(list);
-      console.log(list.toJSON());
       saveList(list);
     };
   }
   const changeQuantity = updateList((type, name, amount) =>
-    list.changeQuantity(name, type, amount)
+    list.changeQuantity(name, type, amount),
   );
 
   const addNewItem = updateList(() => {
@@ -71,6 +69,7 @@
         const crdt = BAWMap.fromJSON(data);
         list.items.merge(crdt);
         list = list;
+        saveList(list);
       })
       .catch((err) => console.log(err));
   }
@@ -170,8 +169,10 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
           >Close</button
         >
-        <button type="button" class="btn btn-primary" on:click={addNewItem}
-          >Add</button
+        <button
+          type="button"
+          class="btn btn-primary"
+          on:click={() => addNewItem([])}>Add</button
         >
       </div>
     </div>

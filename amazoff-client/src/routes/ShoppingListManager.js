@@ -53,8 +53,13 @@ async function loadListFromFile(fileEntry) {
     return ShoppingList.fromJSON(json);
 }
 
-export async function createNewList(name) {
+export async function createNewList(name,listId = null) {
+
     const list = new ShoppingList(name);
+    if(listId !== null && listId !== ""){
+        list.id = listId;
+    }
+    
     await saveList(list);
     return list;
 }

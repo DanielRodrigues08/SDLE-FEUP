@@ -8,6 +8,7 @@ import { ROSet } from "./roset.js";
 class BAWMap {
     constructor(tag) {
         // Set of keys
+        this.tag = tag;
         this.ks = new AWSet(tag);
         // Map from key to value
         this.kvs = new Map();
@@ -66,6 +67,8 @@ class BAWMap {
     }
     toJSON() {
         const res = {};
+        res.tag = this.tag;
+        res.__type = this.constructor.name;
         res.ks = this.ks.toJSON();
         res.kvs = {};
         for (const [key, value] of this.kvs.entries()) {
@@ -78,6 +81,7 @@ class BAWMap {
     }
     static fromJSON(json) {
         const res = new BAWMap();
+        res.tag = json.tag;
         res.ks = AWSet.fromJSON(json.ks);
         res.kvs = new Map()
         // Serialization of CRDTS should be delagated to its own class so that theese dependencies

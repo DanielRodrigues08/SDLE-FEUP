@@ -40,7 +40,6 @@ class AWSet {
         if (!this.items.has(element)) {
             this.items.set(element, new Map());
         }
-
         this.items.get(element).set(this.tag, contextItem);
     }
     remove(element) {
@@ -59,12 +58,12 @@ class AWSet {
 
     merge(other) {
 
+
         const allItems = new Set();
         for (const item of this.items.keys()) { allItems.add(item) };
         for (const item of other.items.keys()) { allItems.add(item) };
 
         for (const item of allItems) {
-
             const thisTags = safeGet(this.items, item, new Map());
             const otherTags = safeGet(other.items, item, new Map());
 
@@ -77,7 +76,9 @@ class AWSet {
                 mergedTags.set(tag, counter);
             }
 
+
             const inThisNotSeenInOther = this._filter(inThis, other.seen);
+
             const inOtherNotSeenInThis = this._filter(inOther, this.seen);
 
             for (const [tag, counter] of inThisNotSeenInOther) {
@@ -123,7 +124,7 @@ class AWSet {
         for (const key in json.items) {
             const map = new Map();
             for (const deepKey in json.items[key]) {
-                map.set(key, json.items[key][deepKey]);
+                map.set(deepKey, json.items[key][deepKey]);
             }
             res.items.set(key, map);
         }

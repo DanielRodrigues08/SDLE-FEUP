@@ -22,7 +22,18 @@ function mapEditor(map) {
         const items = []
         for (const [key, value] of map.entries()) {
             const item = mapItem(key, value);
-            items.push(item);
+            const deleteItemButton = document.createElement("button");
+            deleteItemButton.innerText = "-";
+            deleteItemButton.addEventListener("click", (e) => {
+                e.stopPropagation();
+                map.remove(key);
+                setElements();
+            })
+            const fullItem = document.createElement("div");
+            fullItem.style.display = "flex";
+            fullItem.appendChild(deleteItemButton);
+            fullItem.appendChild(item);
+            items.push(fullItem);
         }
         elements.replaceChildren(...items);
         console.log(map.entries());
@@ -136,9 +147,9 @@ function mapItem(key, value) {
     const toggable = [valueComponent, valueTypeComponent];
     let fold = false;
 
+
     const keySpan = span(key + ": ")
     item.appendChild(keySpan);
-
     item.appendChild(valueComponent);
     item.addEventListener("click", (e) => {
         e.stopPropagation();

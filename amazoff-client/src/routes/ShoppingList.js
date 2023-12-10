@@ -2,14 +2,16 @@ import { BAWMap, PNCounter } from "crdts";
 class ShoppingList {
     constructor(name) {
         this.name = name;
+        // Shoppping List UUID\
         this.id = crypto.randomUUID();
-        // TODO o id deveria ser diferente
-        this.items = new BAWMap(this.id);
+        // This Replica's UUID
+        this.replicaID = crypto.randomUUID();
+        this.items = new BAWMap(this.replicaID);
     }
     addItem(name) {
-        const item = new BAWMap(this.id);
-        item.set("desired", new PNCounter(this.id));
-        item.set("purchased", new PNCounter(this.id));
+        const item = new BAWMap(this.replicaID);
+        item.set("desired", new PNCounter(this.replicaID));
+        item.set("purchased", new PNCounter(this.replicaID));
         this.items.set(name, item);
     }
     removeItem(name) {
@@ -26,6 +28,7 @@ class ShoppingList {
     toJSON() {
         const res = {
             id: this.id,
+            replicaID: this.replicaID,
             name: this.name,
             items: this.items.toJSON(),
         };
@@ -34,6 +37,7 @@ class ShoppingList {
     static fromJSON(json) {
         const res = new ShoppingList();
         res.id = json.id;
+        res.replicaID = json.replicaID;
         res.name = json.name;
         res.items = BAWMap.fromJSON(json.items);
         return res;
