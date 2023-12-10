@@ -68,11 +68,11 @@
         statusText = "";
         statusButton = "btn-success";
       } else {
-        statusText = "Needs to regain access";
+        statusText = "Needs to regain access to the FS";
         statusButton = "btn-warning";
       }
     } else {
-      statusText = "Doesn't have access";
+      statusText = "No FS access";
       statusButton = "btn-danger";
     }
   }

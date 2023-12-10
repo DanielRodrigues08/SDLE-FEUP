@@ -2,8 +2,6 @@ import { writable } from "svelte/store";
 import { ShoppingList } from "./ShoppingList";
 
 function createdListsStore() {
-    const exemplo = new ShoppingList("Exemplo");
-    exemplo.id = "one";
     const { subscribe, set, update } = writable({
         lists: {
 
@@ -61,3 +59,24 @@ export const storageSettings = writable({
 export const userLists = writable({
    
 });
+
+function createUserSettings(){
+    const {subscribe, set, update} = writable({
+    });
+
+    function connect(url){
+        return update(s => {return {...s, server: url}});
+    }
+
+    function disconnect(){
+        return update(s => {return {...s, server: null}});
+    }
+
+    return {
+        subscribe,
+        connect: connect,
+        disconnect: disconnect,
+    }
+}
+
+export const userSettings = createUserSettings();

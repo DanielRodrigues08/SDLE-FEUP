@@ -1,5 +1,6 @@
 <script>
   import Permissions from "./Permissions.svelte";
+  import SyncSettings from "./SyncSettings.svelte";
   import { openedLists } from "./stores.js";
   // This should be a a svelte store to be shared amongst other components
 </script>
@@ -60,7 +61,7 @@
       </ul>
     </div>
     <Permissions />
-    <button class="btn btn-secondary mx-2">Sync All</button>
+    <SyncSettings />
     <a href="/add-list" class="btn btn-secondary">Add List</a>
   </div>
 </nav>
