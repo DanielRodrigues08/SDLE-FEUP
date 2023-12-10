@@ -72,7 +72,7 @@ class Server {
             let list = {};
             for (const node of this.nodes) {
                 try {
-                    const response = axios.post(`${node}/postList`, requestBody);
+                    const response = await axios.post(`${node}/postList`, requestBody);
                     res.status(200).json({message: `Data: ${response.data}`});
                     break;
                     

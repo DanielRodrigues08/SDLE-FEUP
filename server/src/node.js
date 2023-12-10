@@ -191,16 +191,23 @@ class Node {
     }
 
     storeEndpoint(req, res) {
-        
-        let handoff = false
-        if ("handoff" in req.body)
-            handoff = true
-        
-        console.log("HELLO", handoff)
-        let list = this.store(req, handoff)
-        res.status(200).json({message: `\n Posted to Server and its neighbors!`, data: JSON.stringify(list)});
-        
-
+        return new Promise(async (resolve, reject) => {
+            try {
+            let handoff = false;
+            if ("handoff" in req.body)
+                handoff = true;
+    
+            console.log("HELLO", handoff);
+            let list = await this.store(req, handoff);
+            res.status(200).json({ message: `\n Posted to Server and its neighbors!`, data: JSON.stringify(list) });
+    
+            // Resolve the promise with the list
+            resolve(list);
+            }
+        catch(error) {
+            reject(error)
+        }
+        });
     }
 
 
@@ -234,7 +241,7 @@ class Node {
     }
 
 
-    postList(req, res) {
+    async postList(req, res) {
 
         const requestBody    = req.body;
         const requestId      = requestBody.id;
@@ -251,22 +258,14 @@ class Node {
         while (i < preferenceList.length) {
             let node = preferenceList[i];
             try {
-                if (node === this.address) {
-                    list = this.store(req);
-                    console.log(list)
+                    lists.push(await axios.post(`${node}/store`, requestBody));
+                    chosenNeighboors.push(node);
+                    if (chosenNeighboors.length === this.neighboorhood) {
+                        break;
+                    }
+            }
 
-                } else {
-                    console.log(`Forwarding request to ${node}`);
-                    axios.post(`${node}/store`, requestBody).then(result => list = result);
-                }
-                if (list != null)
-                    lists.push(list);
-
-                chosenNeighboors.push(node);
-                if (chosenNeighboors.length === this.neighboorhood) {
-                    break;
-                }
-            } catch (error) {
+             catch (error) {
                 console.log(`Error: ${error.message}`);
             }
             finally {
@@ -280,11 +279,24 @@ class Node {
 
             for (const neighbor of chosenNeighboors) {
 
-                axios.post(`${neighbor}/store`, newRequestBody, { params: { handoff: true } });
+                lists.push(await axios.post(`${neighbor}/store`, newRequestBody, { params: { handoff: true } }));
             }
         }
-        console.log(lists[0])
-        res.status(200).json({message: `\n Posted to Server and its neighbors!`, data: JSON.stringify(lists[0])});
+
+
+        const responses = await Promise.all(lists);
+
+        console.log("AA", responses)
+        for (const response of responses) {
+            if (response.status === 200) {
+                res.status(200).json({message: `\n Posted to Server and its neighbors!`, data: JSON.stringify(response.data)});
+                res.end()
+                return
+            }
+
+        }
+
+        res.status(500).json({message: `\nWent wrong while posting to neighbors!`});
         res.end()
 
     }
