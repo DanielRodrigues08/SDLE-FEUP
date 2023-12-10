@@ -54,6 +54,7 @@ async function loadListFromFile(fileEntry) {
 }
 
 export async function createNewList(name) {
+
     const list = new ShoppingList(name);
     await saveList(list);
     return list;
