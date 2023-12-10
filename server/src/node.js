@@ -6,6 +6,7 @@ import axios from "axios";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+import { debug } from "console";
 
 class Node {
     constructor(hostname, port, allNodes, numInstances, protocol = "http", degreeGossip = 3) {
@@ -31,7 +32,7 @@ class Node {
         this.server.post('/shutdown', this.shutdown.bind(this))
 
         this.server.post('/postList', this.postList.bind(this))
-        this.server.post('/store', this.store.bind(this))
+        this.server.post('/store', this.storeEndpoint.bind(this))
 
         this.server.listen(this.port, () => {
             setInterval(this.handoff.bind(this), 10000);
@@ -189,11 +190,33 @@ class Node {
 
     }
 
+    storeEndpoint(req, res) {
+        return new Promise(async (resolve, reject) => {
+            try {
+            let handoff = false;
+            if ("handoff" in req.body)
+                handoff = true;
+    
+            console.log("HELLO", handoff);
+            let list = await this.store(req, handoff);
+            res.status(200).json({ message: `\n Posted to Server and its neighbors!`, data: JSON.stringify(list) });
+    
+            // Resolve the promise with the list
+            resolve(list);
+            }
+        catch(error) {
+            reject(error)
+        }
+        });
+    }
+
 
     store(req, handoff = false) {
 
+
+        console.log("JEEEE", req.body)
         const requestBody = req.body;
-        const requestId = requestBody.id;
+        const requestId   = requestBody.id;
         const targetNodes = this.consistentHashing.getNode(requestId).slice(0, this.neighboorhood);
 
 
@@ -208,6 +231,9 @@ class Node {
             fs.mkdirSync(folderPath, {recursive: true}); // Use a recursive option to create parent directories if they don't exist
         }
 
+        if ('handoff' in requestBody)
+            delete requestBody.handoff
+
         const filePath = path.join(folderPath, `${requestId}.json`);
         fs.writeFileSync(filePath, JSON.stringify(requestBody));
         return requestBody;
@@ -215,7 +241,7 @@ class Node {
     }
 
 
-    postList(req, res) {
+    async postList(req, res) {
 
         const requestBody    = req.body;
         const requestId      = requestBody.id;
@@ -227,25 +253,19 @@ class Node {
         let chosenNeighboors = []
 
         
+        console.log(preferenceList)
 
         while (i < preferenceList.length) {
             let node = preferenceList[i];
             try {
-                if (node === this.address) {
-                    list = this.store(req);
+                    lists.push(await axios.post(`${node}/store`, requestBody));
+                    chosenNeighboors.push(node);
+                    if (chosenNeighboors.length === this.neighboorhood) {
+                        break;
+                    }
+            }
 
-                } else {
-                    console.log(`Forwarding request to ${node}`);
-                    list = axios.post(`${node}/store`, requestBody);
-                }
-                if (list != null)
-                    lists.push(list);
-
-                counter.push(node);
-                if (chosenNeighboors.length === this.neighboorhood) {
-                    break;
-                }
-            } catch (error) {
+             catch (error) {
                 console.log(`Error: ${error.message}`);
             }
             finally {
@@ -254,12 +274,29 @@ class Node {
         }
 
         if (chosenNeighboors.length < this.neighboorhood) {
+            let newRequestBody = {... requestBody}
+            newRequestBody.handoff = true; 
+
             for (const neighbor of chosenNeighboors) {
-                axios.post(`${neighbor}/store`, requestBody, { params: { handoff: true } });
+
+                lists.push(await axios.post(`${neighbor}/store`, newRequestBody, { params: { handoff: true } }));
             }
         }
 
-        res.status(200).json({message: `\n Posted to Server and its neighbors!`, data: JSON.stringify(lists[0])});
+
+        const responses = await Promise.all(lists);
+
+        console.log("AA", responses)
+        for (const response of responses) {
+            if (response.status === 200) {
+                res.status(200).json({message: `\n Posted to Server and its neighbors!`, data: JSON.stringify(response.data)});
+                res.end()
+                return
+            }
+
+        }
+
+        res.status(500).json({message: `\nWent wrong while posting to neighbors!`});
         res.end()
 
     }
