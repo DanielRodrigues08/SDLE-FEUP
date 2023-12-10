@@ -29,9 +29,8 @@
         if (window.showDirectoryPicker) {
             const dirHandle = await window.showDirectoryPicker();
             storeFsSettings(dirHandle);
-        }
-        else{
-            console.log("[WARNING] THIS BROWSER DOES NOT SUPPORT FILE SYSTEM")
+        } else {
+            console.log("[WARNING] THIS BROWSER DOES NOT SUPPORT FILE SYSTEM");
         }
     }
 
