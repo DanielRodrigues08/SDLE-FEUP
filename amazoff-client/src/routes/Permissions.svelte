@@ -1,9 +1,9 @@
 <script>
-    import {openedLists, storageSettings} from "./stores";
-    import {onMount} from "svelte";
+    import { openedLists, storageSettings } from "./stores";
+    import { onMount } from "svelte";
     // This dependency is needed because, we can't find a solution to store dir handle to the
     // local storage sadly
-    import {get, set} from "idb-keyval";
+    import { get, set } from "idb-keyval";
 
     async function getDirFromStorage() {
         const maybeHandle = await get("dir");
@@ -16,7 +16,7 @@
 
     async function storeFsSettings(dirHandle, access = true) {
         storageSettings.update((s) => {
-            const newS = {...s};
+            const newS = { ...s };
             newS.fs.access = access;
             newS.fs.dir = dirHandle;
             return newS;
@@ -26,13 +26,18 @@
 
     async function grantFsAccess() {
         // Destructure the one-element array.
-        const dirHandle = await window.showDirectoryPicker();
-        storeFsSettings(dirHandle);
+        if (window.showDirectoryPicker) {
+            const dirHandle = await window.showDirectoryPicker();
+            storeFsSettings(dirHandle);
+        }
+        else{
+            console.log("[WARNING] THIS BROWSER DOES NOT SUPPORT FILE SYSTEM")
+        }
     }
 
     function removeFsAccess() {
         storageSettings.update((s) => {
-            const newS = {...s};
+            const newS = { ...s };
             newS.fs.access = false;
             newS.fs.dir = null;
             return newS;
@@ -87,20 +92,20 @@
     {statusText}
 </div>
 <button
-        type="button"
-        class="btn {statusButton}"
-        data-bs-toggle="modal"
-        data-bs-target="#fileSystemAccess"
+    type="button"
+    class="btn {statusButton}"
+    data-bs-toggle="modal"
+    data-bs-target="#fileSystemAccess"
 >
     File System
 </button>
 
 <div
-        class="modal fade"
-        id="fileSystemAccess"
-        tabindex="-1"
-        aria-labelledby="fileSystemAccess"
-        aria-hidden="true"
+    class="modal fade"
+    id="fileSystemAccess"
+    tabindex="-1"
+    aria-labelledby="fileSystemAccess"
+    aria-hidden="true"
 >
     <div class="modal-dialog">
         <div class="modal-content">
@@ -109,17 +114,18 @@
                     File System Access
                 </h1>
                 <button
-                        type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="Close"
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
                 ></button>
             </div>
             <div class="modal-body">
                 {#if $storageSettings.fs.dir}
                     {#if !$storageSettings.fs.access}
                         <p>
-                            Amazoff needs to regain access to: {$storageSettings.fs.dir.name}
+                            Amazoff needs to regain access to: {$storageSettings
+                                .fs.dir.name}
                         </p>
                     {:else}
                         <p>Amazoff has access to the file system</p>
@@ -133,39 +139,43 @@
                 {#if $storageSettings.fs.dir}
                     {#if !$storageSettings.fs.access}
                         <button
-                                class="btn btn-primary"
-                                on:click={async () => {
-                const res = await $storageSettings.fs.dir.requestPermission({
-                  mode: "readwrite",
-                });
-                console.log(res);
-                if (res === "granted") {
-                  storeFsSettings($storageSettings.fs.dir);
-                }
-              }}>Allow Access
-                        </button
-                        >
+                            class="btn btn-primary"
+                            on:click={async () => {
+                                const res =
+                                    await $storageSettings.fs.dir.requestPermission(
+                                        {
+                                            mode: "readwrite",
+                                        },
+                                    );
+                                console.log(res);
+                                if (res === "granted") {
+                                    storeFsSettings($storageSettings.fs.dir);
+                                }
+                            }}
+                            >Allow Access
+                        </button>
                     {:else}
-                        <button class="btn btn-primary" on:click={removeFsAccess}
-                        >Remove Access
-                        </button
-                        >
+                        <button
+                            class="btn btn-primary"
+                            on:click={removeFsAccess}
+                            >Remove Access
+                        </button>
                     {/if}
                     <button class="btn btn-primary" on:click={changeFsDirectory}
-                    >Change Directory
-                    </button
-                    >
+                        >Change Directory
+                    </button>
                 {:else}
                     <button class="btn btn-primary" on:click={grantFsAccess}
-                    >Grant Access
-                    </button
-                    >
+                        >Grant Access
+                    </button>
                 {/if}
 
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                >Close
-                </button
-                >
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                    >Close
+                </button>
             </div>
         </div>
     </div>
