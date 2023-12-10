@@ -3,7 +3,7 @@
 
   let statusText = "";
   let statusButton = "";
-  let serverUrl = "";
+  let serverUrl = "http://localhost:8080"
 
     function disconnect(){
         userSettings.disconnect();
@@ -68,7 +68,7 @@
                 <input
                 type="text"
                 class="form-control"
-                placeholder="http://localhost:3000"
+                placeholder="http://localhost:8080"
                 aria-label="Server URL"
                 aria-describedby="basic-addon1"
                 bind:value={serverUrl}
