@@ -35,6 +35,10 @@
           $userSettings.server + "/addNode",
           addNodeForm
         );
+        await axios.post($userSettings.server + "/updateListNode", {
+          address: removeForm,
+          action: "add"
+        });
         response = res.data.message;
         addNodeForm.host = null;
         addNodeForm.port = null;
@@ -58,6 +62,10 @@
       try {
         const res = await axios.post($userSettings.server + "/removeNode", {
           address: removeForm,
+        });
+        await axios.post($userSettings.server + "/updateListNode", {
+          address: removeForm,
+          action: "remove"
         });
         responseRemove = res.data.message;
         removeForm = null;

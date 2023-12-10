@@ -37,7 +37,7 @@ class Node {
         })
     }
 
-    run() {
+    async run() {
 
         this.server.get('/ring', this.getRing.bind(this))
         this.server.get('/ring/nodes', this.getNodesRing.bind(this))
