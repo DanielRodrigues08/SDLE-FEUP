@@ -1,4 +1,4 @@
-import {AWSet} from "crdts";
+import {BAWMap} from "crdts";
 import {ConsistentHashing} from "./ConsistentHashing.js";
 
 import express from "express";
@@ -6,7 +6,6 @@ import axios from "axios";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
-import { debug } from "console";
 
 class Node {
     constructor(hostname, port, allNodes, numInstances, protocol = "http", degreeGossip = 3) {
@@ -197,9 +196,8 @@ class Node {
             if ("handoff" in req.body)
                 handoff = true;
     
-            console.log("HELLO", handoff);
             let list = await this.store(req, handoff);
-            res.status(200).json({ message: `\n Posted to Server and its neighbors!`, data: JSON.stringify(list) });
+            res.status(200).json({ message: `\n Posted to Server and its neighbors!`, data: list });
     
             // Resolve the promise with the list
             resolve(list);
@@ -213,10 +211,9 @@ class Node {
 
     store(req, handoff = false) {
 
-
-        console.log("JEEEE", req.body)
         const requestBody = req.body;
         const requestId   = requestBody.id;
+        const crdt        = requestBody.payload
         const targetNodes = this.consistentHashing.getNode(requestId).slice(0, this.neighboorhood);
 
 
@@ -235,8 +232,16 @@ class Node {
             delete requestBody.handoff
 
         const filePath = path.join(folderPath, `${requestId}.json`);
-        fs.writeFileSync(filePath, JSON.stringify(requestBody));
-        return requestBody;
+
+        let old_crdt = new BAWMap();
+        if (fs.existsSync(filePath)) {
+            old_crdt = BAWMap.fromJSON(JSON.parse(fs.readFileSync(filePath, 'utf-8')));
+
+        }
+
+        old_crdt.merge(crdt)
+        fs.writeFileSync(filePath, old_crdt.toJSON());
+        return old_crdt.toJSON();
 
     }
 
@@ -285,11 +290,9 @@ class Node {
 
 
         const responses = await Promise.all(lists);
-
-        console.log("AA", responses)
         for (const response of responses) {
             if (response.status === 200) {
-                res.status(200).json({message: `\n Posted to Server and its neighbors!`, data: JSON.stringify(response.data)});
+                res.status(200).json({message: `\n Posted to Server and its neighbors!`, data: response.data});
                 res.end()
                 return
             }
