@@ -87,7 +87,26 @@
       }
     }
   }
+  function downloadList() {
+    const element = document.createElement("a");
+    element.setAttribute(
+      "href",
+      "data:text/plain;charset=utf-8," +
+        encodeURIComponent(JSON.stringify(list.toJSON())),
+    );
+    element.setAttribute("download", list.name);
 
+    element.style.display = "none";
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+  }
+
+  $: {
+    console.log(list);
+  }
   let syncButton;
   $: {
     if ($userSettings.server) {
@@ -102,6 +121,7 @@
 <button class="btn btn-danger float-end me-5" on:click={closeList}
   >Close List</button
 >
+<button class="btn btn-primary float-end me-2" on:click={downloadList}>Download</button>
 <button
   class="btn btn-primary float-end me-2"
   data-bs-toggle="modal"
