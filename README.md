@@ -2,7 +2,7 @@
 
 # Run Servers
 
-To start servers, go to ````server``` folder, and inside ```source``` folder just run ```node --experimental-default-type="module" runServers.js```. That will create five node instances and two distinct intermediary servers with the same list of nodes on ports ```3000``` and ```3001```.
+To start servers, go to `server` folder, and inside ```source``` folder just run ```node --experimental-default-type="module" runServers.js```. That will create five node instances and two distinct intermediary servers with the same list of nodes on ports ```3000``` and ```3001```.
 
 # Configure Nginx Server
 
