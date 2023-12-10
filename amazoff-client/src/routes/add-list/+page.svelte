@@ -1,21 +1,14 @@
 <script>
   import { openedLists } from "../stores";
   import { goto } from "$app/navigation";
+  import { createNewList } from "../ShoppingListManager";
   let name = "";
 
-  function handleEnter(e) {
-    if (e.key === "Enter") {
-      // copy list link to the clip board
-      // redirect to new list
-      const newList = {
-        id: Math.floor(Math.random() * 20),
-        name: name,
-      };
-      openedLists.add(newList);
-      openedLists.setCurrent(newList.id);
-      goto(`/list/${newList.id}`);
-      name = "";
-    }
+  async function handleClick() {
+    const lName = name == "" ? "New List" : name;
+    debugger;
+    const list = await createNewList(lName);
+    goto(`/list/${list.id}`);
   }
 
   $: openedLists.setCurrent(null);
@@ -24,7 +17,7 @@
 <div class="container">
   <div class="row justify-content-center">
     <div class="col-6">
-      <h1>Add List</h1>
+      <h1 class="text-center mt-3">Add List</h1>
       <form>
         <label for="inputName" class="form-label">Name</label>
         <input
@@ -32,6 +25,7 @@
           class="form-control"
           id="inputName"
           aria-describedby="inputNameHelp"
+          bind:value={name}
         />
         <div id="inputNameHelp" class="form-text">
           Enter the name of the list you want to create. Only you will be able
@@ -50,14 +44,12 @@
           If you provide an ID that exists in the cloud, you will modify the
           corresponding list.
         </div>
-        <button type="submit" class="btn btn-primary">Add</button>
+        <button
+          type="submit"
+          class="btn btn-primary float-end"
+          on:click={handleClick}>Add</button
+        >
       </form>
     </div>
   </div>
 </div>
-
-<style>
-  form {
-    width: 25rem;
-  }
-</style>

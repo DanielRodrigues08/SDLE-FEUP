@@ -1,10 +1,9 @@
 import { get } from "svelte/store";
-import { openedLists } from "../../stores";
-//export const ssr = false;
-export function load({ params }) {
+import { openedLists, storageSettings } from "../../stores";
+import { getList } from "../../ShoppingListManager";
+export async function load({ params }) {
     // will only return open list information
-    const res = get(openedLists).lists[params.id];
-    // .....
-    //..... \
-    return res;
+    const list = await getList(params.id);
+
+    return { id: params.id };
 }

@@ -23,6 +23,8 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"crdts": "file:../crdts"
+		"crdts": "file:../crdts",
+		"crypto": "^1.0.1",
+		"idb-keyval": "^6.2.1"
 	}
 }
