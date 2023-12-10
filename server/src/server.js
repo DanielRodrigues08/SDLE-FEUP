@@ -1,7 +1,7 @@
 import express from "express";
 import axios from "axios";
 import {Node} from "./Node.js";
-
+import cors from "cors";
 class Server {
 
     constructor(hostname, port, allNodes, protocol = "http") {
@@ -13,6 +13,7 @@ class Server {
         this.protocol      = protocol
 
         this.server = express()
+        this.server.use(cors()) 
         this.server.use(express.json())
 
     }
@@ -73,7 +74,8 @@ class Server {
             for (const node of this.nodes) {
                 try {
                     const response = await axios.post(`${node}/postList`, requestBody);
-                    res.status(200).json({message: `Data: ${response.data}`});
+                    console.log(response.data.data.data);
+                    res.status(200).json(response.data.data.data);
                     break;
                     
                 }

@@ -3,6 +3,7 @@
   import { navigating } from "$app/stores";
   import { goto } from "$app/navigation";
   import { saveList } from "../../ShoppingListManager.js";
+  import { BAWMap } from "crdts";
 
   export let data;
   $: if ($navigating) openedLists.setCurrent(data.id);
@@ -50,19 +51,20 @@
     }
   }
   function syncList() {
-    fetch("http://localhost:3000/api/sync", {
+    fetch("http://localhost:3000/postList", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         id: list.id,
-        payload: list.toJSON(),
+        payload: list.items.toJSON(),
       }),
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log(data);
+        const crdt = BAWMap.fromJSON(data);
+        list.items.merge(crdt);
         list = list;
       })
       .catch((err) => console.log(err));
