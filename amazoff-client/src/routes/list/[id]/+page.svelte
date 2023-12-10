@@ -88,6 +88,9 @@
     }
   }
 
+  $: {
+    console.log(list);
+  }
   let syncButton;
   $: {
     if ($userSettings.server) {

@@ -10,7 +10,8 @@
     listID = listID.trim();
     const processedListId = listID === "" ? null : listID;
     const list = await createNewList(proccessedName, listID);
-    goto(`/list/${list.id}`);
+    const link = `/list/${list.id}`;
+    goto(link);
   }
 
   $: openedLists.setCurrent(null);
@@ -49,18 +50,11 @@
           If you provide an ID that exists in the cloud, you will modify the
           corresponding list.
         </div>
-        {#if !$storageSettings.fs.access}
-          <div class="alert alert-danger" role="alert">
-            Before you can create a list, you must give access to your file
-            system.
-          </div>
-        {:else}
-          <button
-            type="submit"
-            class="btn btn-primary float-end"
-            on:click={handleClick}>Add</button
-          >
-        {/if}
+        <button
+          type="submit"
+          class="btn btn-primary float-end"
+          on:click={handleClick}>Add</button
+        >
       </form>
     </div>
   </div>
