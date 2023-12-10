@@ -24,6 +24,8 @@
     return (params = []) => {
       f(...params);
       list = list;
+      console.log(list);
+      console.log(list.toJSON());
       saveList(list);
     };
   }
