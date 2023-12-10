@@ -10,13 +10,14 @@ import crypto from "crypto";
 class Node {
     constructor(hostname, port, allNodes, numInstances, protocol = "http", degreeGossip = 3) {
 
-        this.host = hostname
-        this.port = port
-        this.neighboorhood = 3
-        this.address = `${protocol}://${hostname}:${port}`
+        this.host              = hostname
+        this.port              = port
+        this.neighboorhood     = 3
+        this.address           = `${protocol}://${hostname}:${port}`
+        this.numInstances      = numInstances
         this.consistentHashing = new ConsistentHashing(allNodes, numInstances)
-        this.degreeGossip = degreeGossip
-        this.gossipCounter = []
+        this.degreeGossip      = degreeGossip
+        this.gossipCounter     = []
 
         this.server = express()
         this.server.use(express.json())
@@ -65,6 +66,9 @@ class Node {
                     res.status(400).json({ message: "Invalid action" })
                     break
             }
+
+            this.updateHandoff();
+
         }
 
         res.end()
@@ -73,17 +77,17 @@ class Node {
         this._sendGossip(req.body.node, req.body.action, req.body.idAction)
     }
 
-    shutdown(res) {
+    shutdown(req, res) {
         console.log('Initiating graceful shutdown...');
-
+    
         this.moveToHandOff();
-        this.handoff();
         this._sendGossip(this.address, "remove", crypto.randomBytes(20).toString("hex"))
+        this.consistentHashing.removeNode(this.address)
+        this.handoff();
 
         this.server.listen().close(() => {
             console.log(`Server ${this.host}:${this.port} closed gracefully.`);
             res.status(200).json({ message: `Server ${this.host}:${this.port} closed gracefully.` });
-            res.end()
         });
     }
 
@@ -124,6 +128,39 @@ class Node {
         res.end()
     }
 
+    updateHandoff() {
+
+        const sanitizedAddress = this.address.replace(/[:/]/g, '_'); // Replace colons and slashes with underscores
+        const folderPath = path.join("data", sanitizedAddress);
+        if (!fs.existsSync(folderPath)) {
+            return
+        }
+        const files = fs.readdirSync(folderPath);
+        const handoffFolderPath = path.join(folderPath, "handoff");
+
+        if (!fs.existsSync(handoffFolderPath)) {
+            fs.mkdirSync(handoffFolderPath, { recursive: true }); // Use a recursive option to create parent directories if they don't exist
+        }
+
+        try {
+            for (const file of files) {
+                const filePath = path.join(folderPath, file);
+                if (fs.statSync(filePath).isFile()) {
+                    const targetNodes = this.consistentHashing.getNode(file.split('.')[0]).slice(0, this.neighboorhood);
+                    if (!targetNodes.includes(this.address)) {
+                        const handoffFilePath = path.join(handoffFolderPath, file);
+                        fs.renameSync(filePath, handoffFilePath);
+                    }
+                }
+            }
+        }
+
+        catch (error) {
+            console.log(error)
+        }
+        
+    }
+
     moveToHandOff() {
 
         // This method takes all files stored in the nodes folder and moves them to their handoff folder
@@ -140,12 +177,19 @@ class Node {
             fs.mkdirSync(handoffFolderPath, { recursive: true }); // Use a recursive option to create parent directories if they don't exist
         }
 
-        for (const file of files) {
-            const filePath = path.join(folderPath, file);
-            const handoffFilePath = path.join(handoffFolderPath, file);
-            fs.renameSync(filePath, handoffFilePath);
+        try {
+            for (const file of files) {
+                const filePath = path.join(folderPath, file);
+                if (fs.statSync(filePath).isFile()) {
+                    const handoffFilePath = path.join(handoffFolderPath, file);
+                    fs.renameSync(filePath, handoffFilePath);
+                }
+            }
         }
 
+        catch (error) {
+            console.log(error)
+        }
 
     }
 
@@ -166,7 +210,7 @@ class Node {
             let canDelete = true;
             const filePath = path.join(folderPath, file);
             const fileData = JSON.parse(fs.readFileSync(filePath).toString());
-            const requestId = fileData.id;
+            const requestId = file.split('.')[0]
             const targetNodes = this.consistentHashing.getNode(requestId).slice(0, this.neighboorhood);
 
             for (const node of targetNodes) {
@@ -176,7 +220,7 @@ class Node {
                 }
 
                 console.log(`Forwarding request to ${node}`);
-                const response = await axios.post(`${node}/store`, fileData)
+                const response = await axios.post(`${node}/store`, {id: requestId, payload: fileData})
                 if (response.status !== 200) {
                     canDelete = false;
                 }
@@ -307,7 +351,7 @@ class Node {
 
     setNodes(req, res) {
         const nodes = req.body.nodes
-        this.consistentHashing = new ConsistentHashing(nodes, 4)
+        this.consistentHashing = new ConsistentHashing(nodes, this.numInstances)
     }
 }
 

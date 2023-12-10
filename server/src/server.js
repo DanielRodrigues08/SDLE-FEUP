@@ -2,6 +2,8 @@ import express from "express";
 import axios from "axios";
 import {Node} from "./Node.js";
 import cors from "cors";
+import crypto from "crypto";
+
 class Server {
 
     constructor(hostname, port, allNodes, protocol = "http") {
@@ -47,8 +49,13 @@ class Server {
         const nodePort    = requestBody.port;
         const node        = `${this.protocol}://${nodeHost}:${nodePort}`
         this.nodes.add(node);
-        
+        console.log(node)
         new Node(nodeHost, nodePort, this.nodes, 3).run();
+        await axios.post(`${node}/ring/gossip`, {
+            node: node,
+            action: "add",
+            idAction: crypto.randomBytes(20).toString("hex")
+        })
 
         res.status(200).json({message: `Node ${node} added.`});
         res.end()
@@ -57,8 +64,8 @@ class Server {
     async removeNode(req, res) {
         const requestBody = req.body;
         const node = requestBody.address;
-        axios.post(`${node}/shutdown`);
-        this.nodes.remove(node);
+        await axios.post(`${node}/shutdown`);
+        this.nodes.delete(node)
 
         
         res.status(200).json({message: `Node ${node} removed.`});
