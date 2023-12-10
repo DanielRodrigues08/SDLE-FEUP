@@ -3,9 +3,10 @@ import crypto from "crypto";
 class ConsistentHashing {
 
 
-    constructor(nodes = [], replicas = 3) {
-        this.nodes = new Map(); // { hash: node }
-        this.replicas = replicas;
+    constructor(nodes = [], replicas = 5) {
+        this.nodes         = new Map(); // { hash: node }
+        this.listNodes     = nodes;
+        this.replicas      = replicas;
         nodes.forEach(node => this.addNode(node));
     }
 
@@ -46,12 +47,12 @@ class ConsistentHashing {
             return null;
         }
 
-        const hash = this.hash(key);
-        const keys = Array.from(this.nodes.keys());
-        const sortedKeys = keys.sort();
+        const hash           = this.hash(key);
+        const keys           = Array.from(this.nodes.keys());
+        const sortedKeys     = keys.sort();
 
         const uniqueNodesSet = new Set();
-        const nodeArray = [];
+        const nodeArray      = [];
 
         for (const nodeHash of sortedKeys) {
             if (hash <= nodeHash) {

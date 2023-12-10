@@ -6,6 +6,7 @@ import axios from "axios";
 import fs from "fs";
 import path from "path";
 import crypto from "crypto";
+import { debug } from "console";
 
 class Node {
     constructor(hostname, port, allNodes, numInstances, protocol = "http", degreeGossip = 3) {
@@ -31,7 +32,7 @@ class Node {
         this.server.post('/shutdown', this.shutdown.bind(this))
 
         this.server.post('/postList', this.postList.bind(this))
-        this.server.post('/store', this.store.bind(this))
+        this.server.post('/store', this.storeEndpoint.bind(this))
 
         this.server.listen(this.port, () => {
             setInterval(this.handoff.bind(this), 10000);
@@ -189,11 +190,26 @@ class Node {
 
     }
 
+    storeEndpoint(req, res) {
+        
+        let handoff = false
+        if ("handoff" in req.body)
+            handoff = true
+        
+        console.log("HELLO", handoff)
+        let list = this.store(req, handoff)
+        res.status(200).json({message: `\n Posted to Server and its neighbors!`, data: JSON.stringify(list)});
+        
+
+    }
+
 
     store(req, handoff = false) {
 
+
+        console.log("JEEEE", req.body)
         const requestBody = req.body;
-        const requestId = requestBody.id;
+        const requestId   = requestBody.id;
         const targetNodes = this.consistentHashing.getNode(requestId).slice(0, this.neighboorhood);
 
 
@@ -207,6 +223,9 @@ class Node {
         if (!fs.existsSync(folderPath)) {
             fs.mkdirSync(folderPath, {recursive: true}); // Use a recursive option to create parent directories if they don't exist
         }
+
+        if ('handoff' in requestBody)
+            delete requestBody.handoff
 
         const filePath = path.join(folderPath, `${requestId}.json`);
         fs.writeFileSync(filePath, JSON.stringify(requestBody));
@@ -227,21 +246,23 @@ class Node {
         let chosenNeighboors = []
 
         
+        console.log(preferenceList)
 
         while (i < preferenceList.length) {
             let node = preferenceList[i];
             try {
                 if (node === this.address) {
                     list = this.store(req);
+                    console.log(list)
 
                 } else {
                     console.log(`Forwarding request to ${node}`);
-                    list = axios.post(`${node}/store`, requestBody);
+                    axios.post(`${node}/store`, requestBody).then(result => list = result);
                 }
                 if (list != null)
                     lists.push(list);
 
-                counter.push(node);
+                chosenNeighboors.push(node);
                 if (chosenNeighboors.length === this.neighboorhood) {
                     break;
                 }
@@ -254,11 +275,15 @@ class Node {
         }
 
         if (chosenNeighboors.length < this.neighboorhood) {
+            let newRequestBody = {... requestBody}
+            newRequestBody.handoff = true; 
+
             for (const neighbor of chosenNeighboors) {
-                axios.post(`${neighbor}/store`, requestBody, { params: { handoff: true } });
+
+                axios.post(`${neighbor}/store`, newRequestBody, { params: { handoff: true } });
             }
         }
-
+        console.log(lists[0])
         res.status(200).json({message: `\n Posted to Server and its neighbors!`, data: JSON.stringify(lists[0])});
         res.end()
 

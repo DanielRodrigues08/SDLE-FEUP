@@ -41,16 +41,16 @@ class Server {
 
     async addNode(req, res) {
         const requestBody = req.body;
-        const nodeHost = requestBody.host;
-        const nodePort  = requestBody.port;
-        const node      = `${this.protocol}://${nodeHost}:${nodePort}`
+        const nodeHost    = requestBody.host;
+        const nodePort    = requestBody.port;
+        const node        = `${this.protocol}://${nodeHost}:${nodePort}`
         this.nodes.add(node);
         
         new Node(nodeHost, nodePort, this.nodes, 3).run();
 
         res.status(200).json({message: `Node ${node} added.`});
         res.end()
-    }
+    }   
 
     async removeNode(req, res) {
         const requestBody = req.body;
