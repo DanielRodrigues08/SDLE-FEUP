@@ -62,9 +62,7 @@
     </div>
     <Permissions />
     <SyncSettings />
-    {#if $storageSettings.fs.access}
-      <a href="/add-list" class="btn btn-secondary">Add List</a>
-    {/if}
+    <a href="/add-list" class="btn btn-secondary">Add List</a>
   </div>
 </nav>
 

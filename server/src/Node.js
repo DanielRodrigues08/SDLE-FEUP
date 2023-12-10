@@ -18,13 +18,19 @@ class Node {
         this.consistentHashing = new ConsistentHashing(allNodes, numInstances)
         this.degreeGossip = degreeGossip
         this.gossipCounter = []
+        this.pause = false
 
         this.server = express()
         this.server.use(express.json())
-        this.start()
-    }
-
-    start() {
+        this.server.use(
+            (req, res, next) => {
+                if (this.pause) {
+                    res.status(503).json({ message: `Node ${this.address} paused` })
+                } else {
+                    next()
+                }
+            }
+        )
         this.server.listen(this.port, () => {
             setInterval(this.handoff.bind(this), 10000);
             console.log(`Node listening on port ${this.port}!`)
@@ -37,12 +43,11 @@ class Node {
         this.server.get('/ring/nodes', this.getNodesRing.bind(this))
         this.server.post('/ring/gossip', this.handleGossip.bind(this))
         this.server.post('/setNodes', this.setNodes.bind(this))
-        this.server.post('/shutdown', this.shutdown.bind(this))
-        this.server.post('/pause', this.pause.bind(this))
         this.server.post('/postList', this.postList.bind(this))
         this.server.post('/store', this.storeEndpoint.bind(this))
 
-
+        this.server.post('/shutdown', this.shutdown.bind(this))
+        this.server.post('/pause', this.pauseNode.bind(this))
     }
 
     getNodesRing(req, res) {
@@ -82,12 +87,10 @@ class Node {
         this._sendGossip(req.body.node, req.body.action, req.body.idAction)
     }
 
-    pause(req, res) {
-        this.server.listen().close(() => {
-            console.log(`Server ${this.host}:${this.port} paused.`);
-            setTimeout(() => {this.start()}, req.body.time * 1000)
-            res.status(200).json({ message: `Server ${this.host}:${this.port} paused.` });
-        });
+    pauseNode(req, res) {
+        this.pause = true
+        res.status(200).json({ message: `Node ${this.address} paused for ${req.body.time} seconds` })
+        setTimeout(() => { this.pause = false }, req.body.time * 1000)
     }
 
 

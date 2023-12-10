@@ -1,5 +1,5 @@
 <script>
-  import { openedLists } from "../stores";
+  import { openedLists, storageSettings } from "../stores";
   import { goto } from "$app/navigation";
   import { createNewList } from "../ShoppingListManager";
   let name = "";
@@ -9,7 +9,7 @@
     const proccessedName = name == "" ? "New List" : name;
     listID = listID.trim();
     const processedListId = listID === "" ? null : listID;
-    const list = await createNewList(proccessedName,listID);
+    const list = await createNewList(proccessedName, listID);
     goto(`/list/${list.id}`);
   }
 
@@ -45,17 +45,22 @@
           Provide the list's identifying number to create it. This ID will be
           used to share the list with others.
         </div>
-        <div
-          class="p-3 text-primary-emphasis bg-primary-subtle border border-primary-subtle rounded-3 my-2"
-        >
+        <div class="alert alert-warning mt-2" role="alert">
           If you provide an ID that exists in the cloud, you will modify the
           corresponding list.
         </div>
-        <button
-          type="submit"
-          class="btn btn-primary float-end"
-          on:click={handleClick}>Add</button
-        >
+        {#if !$storageSettings.fs.access}
+          <div class="alert alert-danger" role="alert">
+            Before you can create a list, you must give access to your file
+            system.
+          </div>
+        {:else}
+          <button
+            type="submit"
+            class="btn btn-primary float-end"
+            on:click={handleClick}>Add</button
+          >
+        {/if}
       </form>
     </div>
   </div>
