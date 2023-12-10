@@ -34,8 +34,8 @@ class PNCounter {
         res.negative = this.negative.toJSON();
         return res;
     }
-    static fromJSON(json) {
-        const res = {};
+    static fromJSON(json){
+        const res = new PNCounter();
         res.tag = json.tag;
         res.positive = PCounter.fromJSON(json.positive);
         res.negative = PCounter.fromJSON(json.negative);

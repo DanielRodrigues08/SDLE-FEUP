@@ -60,7 +60,7 @@
       </ul>
     </div>
     <Permissions />
-    <button class="btn btn-secondary mx-2">Sync</button>
+    <button class="btn btn-secondary mx-2">Sync All</button>
     <a href="/add-list" class="btn btn-secondary">Add List</a>
   </div>
 </nav>

@@ -2,7 +2,6 @@
   import { openedLists, userLists } from "./stores.js";
   import { goto } from "$app/navigation";
   import { pollForNewLists } from "./ShoppingListManager.js";
-
   pollForNewLists();
   setInterval(pollForNewLists, 5 * 1000);
   $: openedLists.setCurrent(null);

@@ -1,5 +1,5 @@
-import {BAWMap} from "crdts";
-import {ConsistentHashing} from "./ConsistentHashing.js";
+import { BAWMap } from "crdts";
+import { ConsistentHashing } from "./ConsistentHashing.js";
 
 import express from "express";
 import axios from "axios";
@@ -9,14 +9,14 @@ import crypto from "crypto";
 
 class Node {
     constructor(hostname, port, allNodes, numInstances, protocol = "http", degreeGossip = 3) {
-        
-        this.host              = hostname
-        this.port              = port
-        this.neighboorhood     = 3
-        this.address           = `${protocol}://${hostname}:${port}`
+
+        this.host = hostname
+        this.port = port
+        this.neighboorhood = 3
+        this.address = `${protocol}://${hostname}:${port}`
         this.consistentHashing = new ConsistentHashing(allNodes, numInstances)
-        this.degreeGossip      = degreeGossip
-        this.gossipCounter     = []
+        this.degreeGossip = degreeGossip
+        this.gossipCounter = []
 
         this.server = express()
         this.server.use(express.json())
@@ -40,7 +40,7 @@ class Node {
     }
 
     getNodesRing(req, res) {
-        res.json({nodes: JSON.stringify(this.consistentHashing.getNodes())})
+        res.json({ nodes: JSON.stringify(this.consistentHashing.getNodes()) })
     }
 
     handleGossip(req, res) {
@@ -62,7 +62,7 @@ class Node {
                     this.consistentHashing.removeNode(req.body.node)
                     break
                 default:
-                    res.status(400).json({message: "Invalid action"})
+                    res.status(400).json({ message: "Invalid action" })
                     break
             }
         }
@@ -82,7 +82,7 @@ class Node {
 
         this.server.listen().close(() => {
             console.log(`Server ${this.host}:${this.port} closed gracefully.`);
-            res.status(200).json({message: `Server ${this.host}:${this.port} closed gracefully.`});
+            res.status(200).json({ message: `Server ${this.host}:${this.port} closed gracefully.` });
             res.end()
         });
     }
@@ -137,7 +137,7 @@ class Node {
         const handoffFolderPath = path.join(folderPath, "handoff");
 
         if (!fs.existsSync(handoffFolderPath)) {
-            fs.mkdirSync(handoffFolderPath, {recursive: true}); // Use a recursive option to create parent directories if they don't exist
+            fs.mkdirSync(handoffFolderPath, { recursive: true }); // Use a recursive option to create parent directories if they don't exist
         }
 
         for (const file of files) {
@@ -163,10 +163,10 @@ class Node {
 
         for (const file of files) {
 
-            let canDelete     = true;
-            const filePath    = path.join(folderPath, file);
-            const fileData    = JSON.parse(fs.readFileSync(filePath).toString());
-            const requestId   = fileData.id;
+            let canDelete = true;
+            const filePath = path.join(folderPath, file);
+            const fileData = JSON.parse(fs.readFileSync(filePath).toString());
+            const requestId = fileData.id;
             const targetNodes = this.consistentHashing.getNode(requestId).slice(0, this.neighboorhood);
 
             for (const node of targetNodes) {
@@ -192,19 +192,19 @@ class Node {
     storeEndpoint(req, res) {
         return new Promise(async (resolve, reject) => {
             try {
-            let handoff = false;
-            if ("handoff" in req.body)
-                handoff = true;
-    
-            let list = await this.store(req, handoff);
-            res.status(200).json({ message: `\n Posted to Server and its neighbors!`, data: list });
-    
-            // Resolve the promise with the list
-            resolve(list);
+                let handoff = false;
+                if ("handoff" in req.body)
+                    handoff = true;
+
+                let list = await this.store(req, handoff);
+                res.status(200).json({ message: `\n Posted to Server and its neighbors!`, data: list });
+
+                // Resolve the promise with the list
+                resolve(list);
             }
-        catch(error) {
-            reject(error)
-        }
+            catch (error) {
+                reject(error)
+            }
         });
     }
 
@@ -212,8 +212,8 @@ class Node {
     store(req, handoff = false) {
 
         const requestBody = req.body;
-        const requestId   = requestBody.id;
-        const crdt        = requestBody.payload
+        const requestId = requestBody.id;
+        const crdt = requestBody.payload
         const targetNodes = this.consistentHashing.getNode(requestId).slice(0, this.neighboorhood);
 
 
@@ -225,7 +225,7 @@ class Node {
         }
 
         if (!fs.existsSync(folderPath)) {
-            fs.mkdirSync(folderPath, {recursive: true}); // Use a recursive option to create parent directories if they don't exist
+            fs.mkdirSync(folderPath, { recursive: true }); // Use a recursive option to create parent directories if they don't exist
         }
 
         if ('handoff' in requestBody)
@@ -238,9 +238,10 @@ class Node {
             old_crdt = BAWMap.fromJSON(JSON.parse(fs.readFileSync(filePath, 'utf-8')));
 
         }
-
-        old_crdt.merge(crdt)
-        fs.writeFileSync(filePath, old_crdt.toJSON());
+        //console.log(typeof crdt);
+        //consoVle.log(crdt);
+        old_crdt.merge(BAWMap.fromJSON(crdt))
+        fs.writeFileSync(filePath, JSON.stringify(old_crdt.toJSON()));
         return old_crdt.toJSON();
 
     }
@@ -248,29 +249,29 @@ class Node {
 
     async postList(req, res) {
 
-        const requestBody    = req.body;
-        const requestId      = requestBody.id;
+        const requestBody = req.body;
+        const requestId = requestBody.id;
         const preferenceList = this.consistentHashing.getNode(requestId, this.neighboorhood);
-        let lists            = [];
-        let list             = {};
+        let lists = [];
+        let list = {};
 
-        let i                = 0
+        let i = 0
         let chosenNeighboors = []
 
-        
+
         console.log(preferenceList)
 
         while (i < preferenceList.length) {
             let node = preferenceList[i];
             try {
-                    lists.push(await axios.post(`${node}/store`, requestBody));
-                    chosenNeighboors.push(node);
-                    if (chosenNeighboors.length === this.neighboorhood) {
-                        break;
-                    }
+                lists.push(await axios.post(`${node}/store`, requestBody));
+                chosenNeighboors.push(node);
+                if (chosenNeighboors.length === this.neighboorhood) {
+                    break;
+                }
             }
 
-             catch (error) {
+            catch (error) {
                 console.log(`Error: ${error.message}`);
             }
             finally {
@@ -279,8 +280,8 @@ class Node {
         }
 
         if (chosenNeighboors.length < this.neighboorhood) {
-            let newRequestBody = {... requestBody}
-            newRequestBody.handoff = true; 
+            let newRequestBody = { ...requestBody }
+            newRequestBody.handoff = true;
 
             for (const neighbor of chosenNeighboors) {
 
@@ -292,14 +293,14 @@ class Node {
         const responses = await Promise.all(lists);
         for (const response of responses) {
             if (response.status === 200) {
-                res.status(200).json({message: `\n Posted to Server and its neighbors!`, data: response.data});
+                res.status(200).json({ message: `\n Posted to Server and its neighbors!`, data: response.data });
                 res.end()
                 return
             }
 
         }
 
-        res.status(500).json({message: `\nWent wrong while posting to neighbors!`});
+        res.status(500).json({ message: `\nWent wrong while posting to neighbors!` });
         res.end()
 
     }
@@ -310,4 +311,4 @@ class Node {
     }
 }
 
-export {Node};
+export { Node };
