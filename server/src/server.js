@@ -47,9 +47,11 @@ class Server {
         const requestBody = req.body;
         const nodeHost    = requestBody.host;
         const nodePort    = requestBody.port;
+        const numInstances = requestBody.numInstances;
         const node        = `${this.protocol}://${nodeHost}:${nodePort}`
+        const degree = requestBody.degree;
         this.nodes.add(node);
-        new Node(nodeHost, nodePort, this.nodes, 3).run();
+        new Node(nodeHost, nodePort, this.nodes, numInstances, this.protocol, degree).run();
         await axios.post(`${node}/ring/gossip`, {
             node: node,
             action: "add",
