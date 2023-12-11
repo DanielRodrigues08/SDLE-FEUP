@@ -57,6 +57,10 @@ class Node {
 
     handleGossip(req, res) {
 
+        if (this.shut) {
+            return
+        }
+
         let messageCounter = this.gossipCounter[req.body.idAction] ? this.gossipCounter[req.body.idAction] : 0;
 
         // The message has already been gossiped N times, so we can stop resending it
