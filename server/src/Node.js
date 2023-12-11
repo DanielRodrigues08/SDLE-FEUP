@@ -19,12 +19,13 @@ class Node {
         this.degreeGossip = degreeGossip
         this.gossipCounter = []
         this.pause = false
+        this.shutdown = false
 
         this.server = express()
         this.server.use(express.json())
         this.server.use(
             (req, res, next) => {
-                if (this.pause) {
+                if (this.pause || this.shutdown) {
                     res.status(503).json({ message: `Node ${this.address} paused` })
                 } else {
                     next()
@@ -103,6 +104,7 @@ class Node {
         this.handoff();
 
         this.server.listen().close(() => {
+            this.shutdown = true
             console.log(`Server ${this.host}:${this.port} closed gracefully.`);
             res.status(200).json({ message: `Server ${this.host}:${this.port} closed gracefully.` });
         });
