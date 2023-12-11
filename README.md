@@ -7,9 +7,10 @@
 - Miguel Silva - up202007972
 
 ## Documentation
+- You can watch the demo video [here](), last updated on 10/11/2023.
+- The presentation slides are in the [amazoff_slides.pdf](./docs/amazoff_slides.pdf) file, last updated on 10/11/2023.
+- The system's architecture is detailed in the [architecture.pdf](./docs/architecture.pdf) file, last updated on 07/11/2023.
 
-- The presentation slides are available in the [amazoff_slides.pdf](./docs/amazoff_slides.pdf) file. Last updated on 10/11/2023.
-- The architecture of the system is described in the [architecture.pdf](./docs/architecture.pdf) file. Last updated on 07/11/2023.
 
 
 
@@ -52,6 +53,15 @@ To run:
 cd server
 npm install
 npm run cloud
+```
+
+### CRDTs Test Interface
+To run:
+```sh
+cd crdts-client
+npm install
+# Or run any other server of your choice like vscode live server
+python3 -m http.server 8081
 ```
 
 ## Endpoints
