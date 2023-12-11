@@ -95,14 +95,14 @@ class Node {
         this._sendGossip(req.body.node, req.body.action, req.body.idAction)
     }
 
-    
+    // Pauses the node for a given time
     pauseNode(req, res) {
         this.pause = true
         res.status(200).json({ message: `Node ${this.address} paused for ${req.body.time} seconds` })
         setTimeout(() => { this.pause = false }, req.body.time * 1000)
     }
 
-
+    // Shuts down the node and blocks requests
     async shutdown(req, res) {
         console.log('Initiating graceful shutdown...');
 
@@ -176,6 +176,8 @@ class Node {
         res.end()
     }
 
+
+    // Moves what doesnt belong to the node to handoff folder
     updateHandoff() {
 
         const sanitizedAddress = this.address.replace(/[:/]/g, '_'); // Replace colons and slashes with underscores
