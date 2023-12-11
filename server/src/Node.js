@@ -99,11 +99,11 @@ class Node {
     }
 
 
-    shutdown(req, res) {
+    async shutdown(req, res) {
         console.log('Initiating graceful shutdown...');
 
         this.moveToHandOff();
-        this._sendGossip(this.address, "remove", crypto.randomBytes(20).toString("hex"))
+        await this._sendGossip(this.address, "remove", crypto.randomBytes(20).toString("hex"))
         this.consistentHashing.removeNode(this.address)
         this.handoff();
 
