@@ -39,7 +39,7 @@ class Server {
 
     // Updates the list of nodes in Consistent Hashing
     updateListNode(req, res) {
-        
+        // A simple version of the gossip protocol
         const targetAddress = req.body.address;
         const action        = req.body.action;
 
@@ -59,6 +59,8 @@ class Server {
 
     // Creates node server and adds it to the list of nodes
     async addNode(req, res) {
+        // The server will add a new node to the ring
+        // Will also update the list of nodes and send a message to other servers to update their list of nodes
         const requestBody = req.body;
         const nodeHost = requestBody.host;
         const nodePort = requestBody.port;
@@ -89,6 +91,8 @@ class Server {
     }
 
     async removeNode(req, res) {
+        // The server will remove node from the ring
+        // Will also update the list of nodes and send a message to other servers to update their list of nodes
         const requestBody = req.body;
         const node = requestBody.address;
 
@@ -125,7 +129,7 @@ class Server {
 
     // Posts list to the storage and returns updated CRDT
     async postList(req, res) {
-
+        
         try {
             const requestBody = req.body;
             const requestId = requestBody.id;

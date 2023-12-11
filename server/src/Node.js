@@ -23,6 +23,7 @@ class Node {
 
         this.server = express()
         this.server.use(express.json())
+        //To simulate pause and shutdown in the node
         this.server.use(
             (req, res, next) => {
                 if (this.pause || this.shut) {
@@ -59,7 +60,6 @@ class Node {
 
     // Gossip messages are received here
     handleGossip(req, res) {
-
         if (this.shut) {
             return
         }
@@ -119,12 +119,15 @@ class Node {
     }
 
     async _sendGossip(targetNode, action, idAction, nodesToGossip = [], timeout = 5000) {
+        // If the nodesToGossip array is empty, it means that the node has to choose random nodes to gossip
+        // Otherwise, it will try to send the message to the nodes defined in the array
         if (nodesToGossip.length === 0) {
             nodesToGossip = this._chooseRandomNodes(this.degreeGossip);
         }
 
         const nodesDown = []
 
+        // To cancel the setTimeout if the node is shutting down
         if (this.shut) {
             return
         }
@@ -141,7 +144,7 @@ class Node {
             }
         }
 
-
+        // Tries to send the message again to the nodes that were down
         if (nodesDown.length !== 0) {
             setTimeout(() => {
                 this._sendGossip(targetNode, action, idAction, nodesDown, timeout)
