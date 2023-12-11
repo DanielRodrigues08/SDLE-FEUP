@@ -83,9 +83,11 @@
           name: key,
           desired: value.get("desired").value(),
           purchased: value.get("purchased").value(),
+          isDone: list.isDone(key),
         });
       }
     }
+    console.log(items);
   }
   function downloadList() {
     const element = document.createElement("a");
@@ -107,21 +109,16 @@
   $: {
     console.log(list);
   }
-  let syncButton;
-  $: {
-    if ($userSettings.server) {
-      syncButton = "btn-success";
-    } else {
-      syncButton = "btn-danger";
-    }
-  }
+  let syncButton = "btn-primary";
 </script>
 
 <h1 class="text-center mt-3">{list.name}</h1>
 <button class="btn btn-danger float-end me-5" on:click={closeList}
   >Close List</button
 >
-<button class="btn btn-primary float-end me-2" on:click={downloadList}>Download</button>
+<button class="btn btn-primary float-end me-2" on:click={downloadList}
+  >Download</button
+>
 <button
   class="btn btn-primary float-end me-2"
   data-bs-toggle="modal"
@@ -205,7 +202,7 @@
   {#each items as item}
     <div class="col">
       <div class="card">
-        <div class="card-header text-center">{item.name}</div>
+        <div class="card-header text-center  {item.isDone? "laraBonita" :""}">{item.name}</div>
         <div class="card-body">
           <ul class="list-group list-group-flush">
             <li class="list-group-item">
@@ -256,3 +253,10 @@
     </div>
   {/each}
 </div>
+
+<style>
+  .laraBonita{
+    background-color: #ff7300;
+    color:aliceblue;
+  }
+</style>

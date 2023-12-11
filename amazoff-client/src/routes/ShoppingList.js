@@ -14,6 +14,14 @@ class ShoppingList {
         item.set("purchased", new PNCounter(this.replicaID));
         this.items.set(name, item);
     }
+    isDone(name) {
+        if (this.items.get(name)) {
+            const desired = this.items.get(name).get("desired").value();
+            const purchased = this.items.get(name).get("purchased").value();
+            return purchased >= desired;
+        }
+        return false;
+    }
     removeItem(name) {
         this.items.remove(name);
     }
