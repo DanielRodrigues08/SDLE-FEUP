@@ -18,14 +18,14 @@ class Node {
         this.consistentHashing = new ConsistentHashing(allNodes, numInstances)
         this.degreeGossip = degreeGossip
         this.gossipCounter = []
-        this.pause = false
-        this.shutdown = false
+        this.pause    = false
+        this.shut = false
 
         this.server = express()
         this.server.use(express.json())
         this.server.use(
             (req, res, next) => {
-                if (this.pause || this.shutdown) {
+                if (this.pause || this.shut) {
                     res.status(503).json({ message: `Node ${this.address} paused` })
                 } else {
                     next()
@@ -104,7 +104,7 @@ class Node {
         this.handoff();
 
         this.server.listen().close(() => {
-            this.shutdown = true
+            this.shut = true
             console.log(`Server ${this.host}:${this.port} closed gracefully.`);
             res.status(200).json({ message: `Server ${this.host}:${this.port} closed gracefully.` });
         });
@@ -117,7 +117,9 @@ class Node {
 
         const nodesDown = []
 
-
+        if (this.shut) {
+            return
+        }
         for (const nodeToGossip of nodesToGossip) {
             try {
                 await axios.post(`${nodeToGossip}/ring/gossip`, {
