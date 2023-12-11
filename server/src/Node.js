@@ -38,6 +38,7 @@ class Node {
         })
     }
 
+    // Runs the server
     async run() {
 
         this.server.get('/ring', this.getRing.bind(this))
@@ -55,6 +56,8 @@ class Node {
         res.json({ nodes: JSON.stringify(this.consistentHashing.getNodes()) })
     }
 
+
+    // Gossip messages are received here
     handleGossip(req, res) {
 
         if (this.shut) {
@@ -92,6 +95,7 @@ class Node {
         this._sendGossip(req.body.node, req.body.action, req.body.idAction)
     }
 
+    
     pauseNode(req, res) {
         this.pause = true
         res.status(200).json({ message: `Node ${this.address} paused for ${req.body.time} seconds` })

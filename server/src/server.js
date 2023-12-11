@@ -23,6 +23,8 @@ class Server {
 
     }
 
+
+    // Runs the server
     run() {
 
         this.server.post('/postList', this.postList.bind(this))
@@ -35,6 +37,7 @@ class Server {
         })
     }
 
+    // Updates the list of nodes in Consistent Hashing
     updateListNode(req, res) {
         
         const targetAddress = req.body.address;
@@ -53,7 +56,8 @@ class Server {
             }
             res.status(200).json({ message: `Node ${targetAddress} ${action}d.` });
     }
-    
+
+    // Creates node server and adds it to the list of nodes
     async addNode(req, res) {
         const requestBody = req.body;
         const nodeHost = requestBody.host;
@@ -105,6 +109,7 @@ class Server {
         res.end()
     }
 
+    // Pauses node for a given time, blocking requests
     async pauseNode(req, res) {
         const requestBody = req.body;
         const node = requestBody.address;
@@ -118,6 +123,7 @@ class Server {
         res.end()
     }
 
+    // Posts list to the storage and returns updated CRDT
     async postList(req, res) {
 
         try {
