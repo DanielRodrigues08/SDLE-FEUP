@@ -9,7 +9,6 @@ Link to the YouTube [video](https://youtu.be/yyL1a-NZa38)
 - Miguel Silva - up202007972
 
 ## Documentation
-- You can watch the demo video [here](), last updated on 10/11/2023.
 - The presentation slides are in the [amazoff_slides.pdf](./docs/amazoff_slides.pdf) file, last updated on 10/11/2023.
 - The system's architecture is detailed in the [architecture.pdf](./docs/architecture.pdf) file, last updated on 07/11/2023.
 
