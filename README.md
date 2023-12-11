@@ -1,18 +1,63 @@
-# SDLE
+# Amazoff 
 
-# Run Servers
+## Team Members
+- Abílio Epalanga - up202300492
+- Daniel Rodrigues - up202006562
+- Martim Videira - up202006289
+- Miguel Silva - up202007972
 
-To start servers, go to `server` folder, and inside ```source``` folder just run ```node --experimental-default-type="module" runServers.js```. That will create five node instances and two distinct intermediary servers with the same list of nodes on ports ```3000``` and ```3001```.
+## Documentation
 
-# Configure Nginx Server
+- The presentation slides are available in the [amazoff_slides.pdf](./docs/amazoff_slides.pdf) file. Last updated on 10/11/2023.
+- The architecture of the system is described in the [architecture.pdf](./docs/architecture.pdf) file. Last updated on 07/11/2023.
+
+
+
+
+## Pre-requisites
+- The following software must be installed:
+    - Node.js v20.0.1
+      - [Nodejs Download](https://nodejs.org/en/download)
+    - Nginx 
+      - `sudo apt install nginx`
+
+
+## How to run
+### Amazoff Client
+To run:
+```shell
+cd amazoff-client
+npm install
+npm run dev
+```
+### Nginx
 
 Run bash script present in ```nginx``` folder to start Nginx, which will redirect requests made to port ```8080``` to one of the multiple intermediary server replicas. That will alter your ```nginx.conf``` file in  order to support its reverse-proxy cabalities, and redirect requests to the defined upstream backend entries.
 
 To run:
-
 ```sh
+cd nginx
 chmod +x start_nginx.sh
 ./start_nginx.sh
 ```
 
-Client can now make requests to port ```8080```, which will go through the step of load-balancing before reaching the intermediary server.
+
+### Cloud
+To start servers, go to `server` folder, and inside ```src``` folder just run ```npm run cloud```. That will create five node instances and two distinct intermediary servers with the same list of nodes on ports ```3000``` and ```3001```. The nodes will store the data in `server/src/data` folder.
+
+Before running the cloud, you must have a running instance of Nginx, as described above.
+
+To run:
+```sh
+cd server
+npm install
+npm run cloud
+```
+
+## Endpoints
+The following endpoints are the ones most relevant to see the state of the system and to interact with it:
+- `GET <Client Interface address>/admin`: Accesses the admin page.
+- `GET <Node address>/ring`: Retrieves the ring state specific to that node.
+- `GET <Node address>/ring/nodes`: Displays the list of nodes within the ring for that particular node.
+
+Additionally, there are other endpoints specifically utilized by the client interface.

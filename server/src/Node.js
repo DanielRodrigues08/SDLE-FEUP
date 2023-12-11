@@ -18,13 +18,14 @@ class Node {
         this.consistentHashing = new ConsistentHashing(allNodes, numInstances)
         this.degreeGossip = degreeGossip
         this.gossipCounter = []
-        this.pause = false
+        this.pause    = false
+        this.shut = false
 
         this.server = express()
         this.server.use(express.json())
         this.server.use(
             (req, res, next) => {
-                if (this.pause) {
+                if (this.pause || this.shut) {
                     res.status(503).json({ message: `Node ${this.address} paused` })
                 } else {
                     next()
@@ -37,7 +38,7 @@ class Node {
         })
     }
 
-    run() {
+    async run() {
 
         this.server.get('/ring', this.getRing.bind(this))
         this.server.get('/ring/nodes', this.getNodesRing.bind(this))
@@ -55,6 +56,10 @@ class Node {
     }
 
     handleGossip(req, res) {
+
+        if (this.shut) {
+            return
+        }
 
         let messageCounter = this.gossipCounter[req.body.idAction] ? this.gossipCounter[req.body.idAction] : 0;
 
@@ -94,15 +99,16 @@ class Node {
     }
 
 
-    shutdown(req, res) {
+    async shutdown(req, res) {
         console.log('Initiating graceful shutdown...');
 
         this.moveToHandOff();
-        this._sendGossip(this.address, "remove", crypto.randomBytes(20).toString("hex"))
+        await this._sendGossip(this.address, "remove", crypto.randomBytes(20).toString("hex"))
         this.consistentHashing.removeNode(this.address)
         this.handoff();
 
         this.server.listen().close(() => {
+            this.shut = true
             console.log(`Server ${this.host}:${this.port} closed gracefully.`);
             res.status(200).json({ message: `Server ${this.host}:${this.port} closed gracefully.` });
         });
@@ -115,7 +121,9 @@ class Node {
 
         const nodesDown = []
 
-
+        if (this.shut) {
+            return
+        }
         for (const nodeToGossip of nodesToGossip) {
             try {
                 await axios.post(`${nodeToGossip}/ring/gossip`, {
