@@ -1,3 +1,6 @@
+# Large Scale Distributed Systems
+FEUP M.EIC Y1S1
+
 # Amazoff 
 
 Link to the YouTube [video](https://youtu.be/yyL1a-NZa38)
